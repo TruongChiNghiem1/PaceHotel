@@ -5,10 +5,16 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.Serializable;
+import java.rmi.AccessException;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.Registry;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -21,12 +27,16 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
-import dao.RoomType_DAO;
-import dao.Room_DAO;
+import dao.RoomIDao;
+import dao.RoomTypeIDao;
 import entity.Room;
 import entity.RoomType;
 
-public class frmRoomManage extends JFrame implements ActionListener {
+public class frmRoomManage extends JFrame implements ActionListener, Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -1555877702877333228L;
 	private JLabel pRoomID, pRoomType, pPeople, pStatus, pTitle;
 	private JTextField inputRoomID, inputRoomType, inputStatus, inputFind;
 	private JButton btnAdd, btnUpdate, btnClear, btnSave, btnDelete, btnFind;
@@ -35,11 +45,11 @@ public class frmRoomManage extends JFrame implements ActionListener {
 	private DefaultTableModel model;
 	private JPanel sectionBorder;
 	private int index = 1;
-	private Room_DAO roomList;
-	private RoomType_DAO roomTypeList;
+	private RoomIDao roomList;
+	private RoomTypeIDao roomTypeList;
 	private Object[] lastRoom;
 
-	public frmRoomManage() {
+	public frmRoomManage(Registry registry) throws AccessException, RemoteException, NotBoundException {
 		setTitle("Room manager");
 		setLocationRelativeTo(null);
 		setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -72,7 +82,7 @@ public class frmRoomManage extends JFrame implements ActionListener {
 		pnC1.add(inputRoomID = new JTextField());
 		pnC1.add(pRoomType = new JLabel("Room Type:"));
 		pnC1.add(cbRoomType = new JComboBox<>());
-		roomTypeList = new RoomType_DAO();
+		roomTypeList = (RoomTypeIDao) registry.lookup("roomTypeIDao");
 		for (RoomType rt : roomTypeList.getAllRoomType()) {
 			cbRoomType.addItem(rt.getRoomType());
 		}
@@ -96,7 +106,7 @@ public class frmRoomManage extends JFrame implements ActionListener {
 		String[] cols = { "STT", "Room ID", "Room Type", "People", "Bed", "First Hour Fee", "Second Hour Fee",
 				"Overnight", "Status" };
 		model = new DefaultTableModel(cols, 0);
-		roomList = new Room_DAO();
+		roomList = (RoomIDao) registry.lookup("roomIDao");
 
 		for (Object[] o : roomList.getAllInfoRoom()) {
 			Object[] rowData = { index, o[0], o[1], o[2], o[3], o[4], o[5], o[6], o[7] };
@@ -171,39 +181,39 @@ public class frmRoomManage extends JFrame implements ActionListener {
 		
 		tbService.addMouseListener(new MouseListener() {
 			
-			@Override
 			public void mouseReleased(MouseEvent e) {
 				// TODO Auto-generated method stub
 				
 			}
 			
-			@Override
 			public void mousePressed(MouseEvent e) {
 				// TODO Auto-generated method stub
 				
 			}
 			
-			@Override
 			public void mouseExited(MouseEvent e) {
 				// TODO Auto-generated method stub
 				
 			}
 			
-			@Override
 			public void mouseEntered(MouseEvent e) {
 				// TODO Auto-generated method stub
 				
 			}
 			
-			@Override
 			public void mouseClicked(MouseEvent e) {
-				renderRowOfTable();
+				try {
+					renderRowOfTable();
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 				
 			}
 		});
 	}
 	
-	public void renderRowOfTable() {
+	public void renderRowOfTable() throws RemoteException {
 		int r = tbService.getSelectedRow();
 		inputRoomID.setText(model.getValueAt(r, 1).toString());
 		for (Object[] o : roomList.getAllInfoRoom()) {
@@ -216,7 +226,6 @@ public class frmRoomManage extends JFrame implements ActionListener {
 		}
 	}
 
-	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource().equals(btnAdd)) {
 			if(validData()) {
@@ -277,7 +286,7 @@ public class frmRoomManage extends JFrame implements ActionListener {
 		}
 	}
 
-	public void Delete() {
+	public void Delete() throws RemoteException {
 		int r = tbService.getSelectedRow();
 		int notice = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete this row?", "Delete",
 				JOptionPane.YES_NO_OPTION);
@@ -308,7 +317,7 @@ public class frmRoomManage extends JFrame implements ActionListener {
 		
 	}
 
-	public void Find() {
+	public void Find() throws HeadlessException, RemoteException {
 		String IDFind = inputFind.getText();
 		if (roomList.findRoom(IDFind) == -1) {
 			JOptionPane.showMessageDialog(null, "ID does not exist !");

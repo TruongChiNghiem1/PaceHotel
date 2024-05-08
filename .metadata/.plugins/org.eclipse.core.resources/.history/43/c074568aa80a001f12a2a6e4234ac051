@@ -1,0 +1,157 @@
+package service;
+
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import javax.swing.JOptionPane;
+
+import dao.EmployeeIDao;
+import entity.Employee;
+import entity.Role;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+
+public class Employee_DAO extends UnicastRemoteObject implements EmployeeIDao
+{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -2774272830753420475L;
+	private EntityManager entityManager;
+	public Employee_DAO(EntityManager entityManager) throws RemoteException {
+		// TODO Auto-generated constructor stub
+		this.entityManager = entityManager;
+	}
+	
+
+	public List<Employee> getAllEmployees() {
+	    return entityManager.createQuery("SELECT e FROM Employee e", Employee.class)
+	            .getResultList();
+	}
+	
+//	public Employee revertRowToEmployee(ResultSet rs) {
+//		Employee e = null;
+//		try {
+//			e = new Employee(rs.getString(1),
+//					rs.getString(2),
+//					rs.getString(3),
+//					rs.getInt(4),
+//					rs.getString(5),
+//					rs.getString(6),
+//					rs.getString(7),
+//					rs.getDouble(8),
+//					rs.getString(9));
+//		} catch (SQLException e1) {
+//			// TODO Auto-generated catch block
+//			e1.printStackTrace();
+//		}
+//		return e;
+//	}
+               
+
+
+	public Employee login(String employeeID, String password) {
+	    try {
+	        return entityManager.createNativeQuery("SELECT e.employeeId, e.fullName, e.dOB, e.gender, e.phoneNo, e.email,\r\n"
+	            + "			e.password, e.salary, e.role FROM employee e WHERE e.employeeId = :employeeId AND e.password = :password",
+	            Employee.class)
+	            .setParameter("employeeId", employeeID)
+	            .setParameter("password", password)
+	            .getSingleResult();
+	    } catch (NoResultException e) {
+	        return null;
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        return null;
+	    }
+	}
+	
+//	public int addEmployee(Employee e) throws ParseException {
+//		ConnectDB.getInstance();
+//		Connection con = ConnectDB.getConnection();
+//		PreparedStatement stmt = null;
+//		int n = 0;
+//		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+//		java.util.Date date = dateFormat.parse(e.getDOB());
+//		java.sql.Date sqlDate = new java.sql.Date(date.getTime());
+//		try {
+//			stmt = con.prepareStatement("insert into Employee values(?,?,?,?,?,?,?,?,?)");
+//			stmt.setString(1, e.getEmployeeID());
+//			stmt.setString(2, e.getFullName());
+//			stmt.setDate(3, sqlDate);
+//			stmt.setInt(4, e.getGender());
+//			stmt.setString(5, e.getPhoneNo());
+//			stmt.setString(6, e.getEmail());
+//			stmt.setString(7, "123");
+//			stmt.setDouble(8, e.getSalary());
+//			stmt.setString(9, "ER001");
+//			n = stmt.executeUpdate();
+//		}catch (SQLException ex) {
+//			ex.printStackTrace();
+//		}
+//		return n;
+//	}
+//	
+//	public boolean deleteEmployee(String IDDelt) {
+//		ConnectDB.getInstance();
+//		Connection con = ConnectDB.getConnection();
+//		PreparedStatement stmt = null;
+//		boolean flag = false;
+//		String sql = "delete from Employee where EmployeeID = ?";
+//		try {
+//			stmt = con.prepareStatement(sql);
+//			stmt.setString(1, IDDelt);
+//			stmt.executeUpdate();
+//			flag = true;
+//			
+//		}catch (SQLException e) {
+//			e.printStackTrace();
+//		}
+//		return flag;
+//	}
+//	
+//	public int findEmployee(String IDFind) {
+//		List<Employee> list = getAllEmployee();
+//		for (int i = 0; i < list.size(); i++) {
+//			if(list.get(i).getEmployeeID().equalsIgnoreCase(IDFind)) {
+//				return i;
+//			}
+//		}
+//		return -1;
+//	}
+//	
+//	public int updateEmployee(String id, String name, String DOB, int gd, String phone, String email, String salary) throws ParseException {
+//		ConnectDB.getInstance();
+//		Connection con = ConnectDB.getConnection();
+//		PreparedStatement stm = null;
+//		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+//		java.util.Date date = dateFormat.parse(DOB);
+//		java.sql.Date sqlDate = new java.sql.Date(date.getTime());
+//		String sql = "update Employee set FullName = ?, DOB = ?, Gender = ?, PhoneNo = ?, Email = ?, Salary = ? where EmployeeID = ?";
+//		try {
+//			stm = con.prepareStatement(sql);
+//			stm.setString(1, name);
+//			stm.setDate(2, sqlDate);
+//			stm.setInt(3, gd);
+//			stm.setString(4, phone);
+//			stm.setString(5, email);
+//			stm.setDouble(6, Double.parseDouble(salary));
+//			stm.setString(7, id);
+//			stm.executeUpdate();
+//		}catch (SQLException e) {
+//			e.printStackTrace();
+//		}
+//		return findEmployee(id);
+//	}
+}

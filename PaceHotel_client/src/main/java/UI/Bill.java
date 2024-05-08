@@ -6,10 +6,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Image;
 import java.awt.Toolkit;
-import java.awt.image.BufferedImage;
 import java.net.URL;
 
-import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
@@ -26,6 +24,10 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
 public class Bill extends JFrame {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -2314886863027805699L;
 	private JLabel lbName, lbLogo, lbGender, lbCard, lbDOB, lbPhone, lbPoint, lbAdult, lbChild, lbArrival, lbDeparture, lbDetail, lbTotal,lbStart;
 	private JTextField txtTitle,txtGender,txtName, txtCard, txtDOB, txtPhone, txtPoint, txtAdult, txtChild, txtArrival, txtDeparture, txtTotal;
 	private JTable tableBill;

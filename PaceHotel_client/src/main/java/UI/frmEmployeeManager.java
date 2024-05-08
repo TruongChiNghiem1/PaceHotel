@@ -10,6 +10,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.Serializable;
+import java.rmi.RemoteException;
+import java.rmi.registry.Registry;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -29,10 +32,14 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
-import dao.Employee_DAO;
 import entity.Employee;
+import service.Employee_DAO;
 
-public class frmEmployeeManager extends JPanel implements ActionListener {
+public class frmEmployeeManager extends JPanel implements ActionListener, Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 8928094115115382213L;
 	private JLabel lblEmployeeID, lblFullName, lblGender, lblDOB, lblPhoneNo, lblSalary, lblPassword;
 	private JTextField txtEmployeeID, txtFullName, txtDOB, txtPhoneNo, txtSalary, txtEmail, txtFind;
 	private JComboBox<String> cbGender;
@@ -42,7 +49,7 @@ public class frmEmployeeManager extends JPanel implements ActionListener {
 	private Employee_DAO employeeList;
 	private int index = 1;
 
-	public frmEmployeeManager() {
+	public frmEmployeeManager(Registry registry) throws RemoteException {
 		setLayout(new BorderLayout());
 
 		JPanel pnNorth = new JPanel();
@@ -101,15 +108,15 @@ public class frmEmployeeManager extends JPanel implements ActionListener {
 
 		String[] cols = { "STT", "EmployeeID", "FullName", "DOB", "Gender", "PhoneNo", "Email", "Salary" };
 		model = new DefaultTableModel(cols, 0);
-		employeeList = new Employee_DAO();
-		for (Employee e : employeeList.getAllEmployee()) {
+		employeeList = new Employee_DAO(null);
+		for (Employee e : employeeList.getAllEmployees()) {
 			String gender = "";
 			if (e.getGender() == 1) {
 				gender = "Nữ";
 			} else {
 				gender = "Nam";
 			}
-			Object[] rowData = { index, e.getEmployeeID(), e.getFullName(), e.getDOB(), gender, e.getPhoneNo(),
+			Object[] rowData = { index, e.getEmployeeId(), e.getFullName(), e.getDOB(), gender, e.getPhoneNo(),
 					e.getEmail(), e.getSalary() };
 			model.addRow(rowData);
 			index++;
@@ -186,45 +193,51 @@ public class frmEmployeeManager extends JPanel implements ActionListener {
 
 		tbEmployee.addMouseListener(new MouseListener() {
 
-			@Override
 			public void mouseReleased(MouseEvent e) {
 				// TODO Auto-generated method stub
 
 			}
-
-			@Override
 			public void mousePressed(MouseEvent e) {
 				// TODO Auto-generated method stub
 
 			}
 
-			@Override
 			public void mouseExited(MouseEvent e) {
 				// TODO Auto-generated method stub
 
 			}
 
-			@Override
 			public void mouseEntered(MouseEvent e) {
 				// TODO Auto-generated method stub
 
 			}
 
-			@Override
 			public void mouseClicked(MouseEvent e) {
 				renderRowOfTable();
 			}
 		});
 	}
 
-	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource().equals(btnFind)) {
-			Find();
+			try {
+				Find();
+			} catch (HeadlessException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (RemoteException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 		} else if (e.getSource().equals(btnClear)) {
 			Clear();
 		} else if (e.getSource().equals(btnDelete)) {
-			Delete();
+			try {
+				Delete();
+			} catch (RemoteException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 		} else if (e.getSource().equals(btnAdd)) {
 			if (validData()) {
 				try {
@@ -314,7 +327,7 @@ public class frmEmployeeManager extends JPanel implements ActionListener {
 		}
 		Employee s = new Employee(EmID, Name, DOB, gd, phone, email, "123", Double.parseDouble(salary), "ER001");
 		if (employeeList.addEmployee(s) != 0) {
-			Object[] row = { index, s.getEmployeeID(), s.getFullName(), s.getDOB(), gender, s.getPhoneNo(),
+			Object[] row = { index, s.getEmployeeId(), s.getFullName(), s.getDOB(), gender, s.getPhoneNo(),
 					s.getEmail(), s.getSalary() };
 			JOptionPane.showMessageDialog(null, "Employee has been successfully added !");
 			model.addRow(row);
@@ -334,7 +347,7 @@ public class frmEmployeeManager extends JPanel implements ActionListener {
 		cbGender.setSelectedIndex(0);
 	}
 
-	public void Delete() {
+	public void Delete() throws RemoteException {
 		int r = tbEmployee.getSelectedRow();
 		if (r != -1) {
 			int notice = JOptionPane.showConfirmDialog(null, "Bạn chắc chắn muốn xóa môn học này chứ?", "Delete",
@@ -349,7 +362,7 @@ public class frmEmployeeManager extends JPanel implements ActionListener {
 		}
 	}
 
-	public void Find() {
+	public void Find() throws HeadlessException, RemoteException {
 		String IDFind = txtFind.getText();
 		if (employeeList.findEmployee(IDFind) == -1) {
 			JOptionPane.showMessageDialog(null, "ID does not exist !");

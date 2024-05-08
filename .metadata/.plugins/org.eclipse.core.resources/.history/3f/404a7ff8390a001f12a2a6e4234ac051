@@ -1,0 +1,26 @@
+package entity;
+
+import java.time.LocalDate;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "HistoryLogin")
+public class HistoryLogin {
+	@Id
+	@Column(nullable = false)
+	private int loginId;
+	private LocalDate loginDateTime;
+	private LocalDate logoutDateTime;
+	private String employeeId;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "employeeId")
+	private Employee employee;
+}

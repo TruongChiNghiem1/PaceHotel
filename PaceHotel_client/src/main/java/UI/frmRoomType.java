@@ -5,13 +5,18 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.Serializable;
+import java.rmi.AccessException;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.Registry;
 
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -21,12 +26,15 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
-import dao.RoomType_DAO;
-import dao.Room_DAO;
-import entity.Room;
+import dao.RoomIDao;
+import dao.RoomTypeIDao;
 import entity.RoomType;
 
-public class frmRoomType extends JFrame implements ActionListener {
+public class frmRoomType extends JFrame implements ActionListener, Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -5288935686394046558L;
 	private JLabel pRoomType, pFirtHour, pNextHour, pOverNight, pQTYBed, pPeople, pDiscount, pSurchage, pTitle;
 	private JTextField inputRoomType, inputFirtHour, inputNextHour, inputFind,inputOverNight, inputQTYBed, inputPeople, inputDiscount, inputSurchage;
 	private JButton btnAdd, btnUpdate, btnClear, btnSave, btnDelete, btnFind;
@@ -34,10 +42,10 @@ public class frmRoomType extends JFrame implements ActionListener {
 	private DefaultTableModel model;
 	private JPanel sectionBorder;
 	private int index = 1;
-	private Room_DAO roomList;
-	private RoomType_DAO roomTypeList;
+	private RoomIDao roomList;
+	private RoomTypeIDao roomTypeList;
 
-	public frmRoomType() {
+	public frmRoomType(Registry registry) throws AccessException, RemoteException, NotBoundException {
 		setTitle("Room type");
 		setLocationRelativeTo(null);
 		setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -82,7 +90,8 @@ public class frmRoomType extends JFrame implements ActionListener {
 		pnC1.add(inputDiscount = new JTextField());
 		pnC1.add(pSurchage = new JLabel("Surchage:"));
 		pnC1.add(inputSurchage = new JTextField());
-		roomTypeList = new RoomType_DAO();
+		roomTypeList = (RoomTypeIDao) registry.lookup("roomTypeIDao");
+
 //		for (RoomType rt : roomTypeList.getAllRoomType()) {
 //			cbRoomType.addItem(rt.getRoomType());
 //		}
@@ -114,10 +123,10 @@ public class frmRoomType extends JFrame implements ActionListener {
 		JPanel pnC2 = new JPanel();
 		String[] cols = { "STT", "Room Type", "First hour", "Next hour", "Over night", "QtyBed","People", "Disscount", "Surchage"};
 		model = new DefaultTableModel(cols, 0);
-		roomList = new Room_DAO();
+		roomList = (RoomIDao) registry.lookup("roomIDao");
 
 		for (RoomType o : roomTypeList.getAllRoomType()) {
-			Object[] rowData = { index, o.getRoomType(), o.getFisrtFee(), o.getSecondFee(), o.getOverNightFee(), o.getQtyBed(), o.getPeople(), o.getDisscount(), o.getSurcharge() };
+			Object[] rowData = { index, o.getRoomType(), o.getFisrtHourFee(), o.getNextHourFee(), o.getOverNightFee(), o.getQtyBed(), o.getPeople(), o.getDisscount(), o.getSurcharge() };
 			model.addRow(rowData);
 			index++;
 		}
@@ -189,31 +198,26 @@ public class frmRoomType extends JFrame implements ActionListener {
 		
 		tbService.addMouseListener(new MouseListener() {
 			
-			@Override
 			public void mouseReleased(MouseEvent e) {
 				// TODO Auto-generated method stub
 				
 			}
 			
-			@Override
 			public void mousePressed(MouseEvent e) {
 				// TODO Auto-generated method stub
 				
 			}
 			
-			@Override
 			public void mouseExited(MouseEvent e) {
 				// TODO Auto-generated method stub
 				
 			}
 			
-			@Override
 			public void mouseEntered(MouseEvent e) {
 				// TODO Auto-generated method stub
 				
 			}
 			
-			@Override
 			public void mouseClicked(MouseEvent e) {
 				renderRowOfTable();
 				
@@ -234,16 +238,36 @@ public class frmRoomType extends JFrame implements ActionListener {
 		
 	}
 
-	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource().equals(btnAdd)) {
-				Add();
+				try {
+					Add();
+				} catch (HeadlessException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 		} else if (e.getSource().equals(btnFind)) {
-			Find();
+			try {
+				Find();
+			} catch (HeadlessException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (RemoteException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 		} else if (e.getSource().equals(btnClear)) {
 			Clear();
 		} else if (e.getSource().equals(btnDelete)) {
-			Delete();
+			try {
+				Delete();
+			} catch (RemoteException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 		} else if (e.getSource().equals(btnUpdate)) {
 			if (btnUpdate.getText().equals("Update")) {
 				btnUpdate.setText("Cancel");
@@ -255,7 +279,15 @@ public class frmRoomType extends JFrame implements ActionListener {
 				btnSave.setVisible(false);
 			}
 		} else if (e.getSource().equals(btnSave)) {
-				Update();
+				try {
+					Update();
+				} catch (HeadlessException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 		}
 
 	}
@@ -276,7 +308,7 @@ public class frmRoomType extends JFrame implements ActionListener {
 		return true;
 	}
 
-	public void Add() {
+	public void Add() throws HeadlessException, RemoteException {
 		String roomType = inputRoomType.getText().toString();
 		double firstHour = Double.parseDouble(inputFirtHour.getText());
 		double nextHour = Double.parseDouble(inputNextHour.getText());
@@ -286,10 +318,10 @@ public class frmRoomType extends JFrame implements ActionListener {
 		float discount = Float.parseFloat(inputDiscount.getText());
 		float surchage = Float.parseFloat(inputSurchage.getText());
 		
-		RoomType newRoom = new RoomType(roomType, firstHour, nextHour, overNight, qtyBed, people, discount, surchage);
+		RoomType newRoom = new RoomType(roomType, firstHour, nextHour, overNight, qtyBed, people, discount, surchage, null);
 		if (roomTypeList.addRoomType(newRoom) != 0) {
 			RoomType rt = roomTypeList.getLastRoom(roomType);
-			Object[] row = { index, rt.getRoomType(), rt.getFisrtFee(), rt.getSecondFee(), rt.getOverNightFee(), rt.getQtyBed(), rt.getPeople(), rt.getDisscount(), rt.getSurcharge()};
+			Object[] row = { index, rt.getRoomType(), rt.getFisrtHourFee(), rt.getNextHourFee(), rt.getOverNightFee(), rt.getQtyBed(), rt.getPeople(), rt.getDisscount(), rt.getSurcharge()};
 			model.addRow(row);
 			index++;
 		} else {
@@ -297,7 +329,7 @@ public class frmRoomType extends JFrame implements ActionListener {
 		}
 	}
 
-	public void Delete() {
+	public void Delete() throws RemoteException {
 		int r = tbService.getSelectedRow();
 		int notice = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete this row?", "Delete",
 				JOptionPane.YES_NO_OPTION);
@@ -310,7 +342,7 @@ public class frmRoomType extends JFrame implements ActionListener {
 		}
 	}
 
-	public void Update() {
+	public void Update() throws HeadlessException, RemoteException {
 		String roomType = inputRoomType.getText();
 		double firstHour = Double.parseDouble(inputFirtHour.getText());
 		double nextHour = Double.parseDouble(inputNextHour.getText());
@@ -333,7 +365,7 @@ public class frmRoomType extends JFrame implements ActionListener {
 		
 	}
 
-	public void Find() {
+	public void Find() throws HeadlessException, RemoteException {
 		String IDFind = inputFind.getText();
 		if (roomList.findRoom(IDFind) == -1) {
 			JOptionPane.showMessageDialog(null, "ID does not exist !");

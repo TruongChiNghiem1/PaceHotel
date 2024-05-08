@@ -1,0 +1,149 @@
+package service;
+
+import java.io.Serializable;
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
+import dao.EmployeeIDao;
+import dao.RoomIDao;
+import entity.Room;
+import jakarta.persistence.EntityManager;
+
+public class Room_DAO  extends UnicastRemoteObject implements RoomIDao, Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -7368623043637158145L;
+
+	private EntityManager entityManager;
+	public Room_DAO(EntityManager entityManager) throws RemoteException {
+		// TODO Auto-generated constructor stub
+		this.entityManager = entityManager;
+	}
+
+	public List<Room> getAllRoom(){
+	    List<Room> roomList = new ArrayList<Room>();
+	    try {
+	        roomList = entityManager.createQuery("SELECT r FROM Room r ORDER BY r.roomNo", Room.class).getResultList();
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    }
+	    return roomList;
+	}
+	
+	public List<Object[]> getAllInfoRoom() {
+		List<Object[]> roomList = new ArrayList<>();
+		Statement stm = null;
+		ResultSet rs = null;
+		String sql = "SELECT r.RoomNo, rt.RoomType, rt.People, rt.QtyBed, rt.FirstHourFee, rt.NextHourFee,rt.OverNightFee, r.Status FROM [dbo].[Room] r JOIN [dbo].[RoomType] rt ON r.RoomTypeRoomType = rt.RoomType order by r.RoomNo";
+		try {
+			stm = con.createStatement();
+			rs = stm.executeQuery(sql);
+			while(rs.next()) {
+				roomList.add(new Object[] 
+						{rs.getString(1),
+						rs.getString(2), 
+						rs.getInt(3), 
+						rs.getInt(4), 
+						rs.getDouble(5), 
+						rs.getDouble(6), 
+						rs.getDouble(7), 
+						rs.getString(8)});
+			}
+		}catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return roomList;
+	}
+	
+	
+	
+	public int addRoom(Room r) {
+		ConnectDB.getInstance();
+		Connection con = ConnectDB.getConnection();
+		PreparedStatement stmt = null;
+		String sql = "insert into Room values(?, ?, ?)";
+		int n = 0;
+		try {
+			stmt = con.prepareStatement(sql);
+			stmt.setString(1, r.getRoom());
+			stmt.setString(2, r.getStatus());
+			stmt.setString(3, r.getRoomType());
+			n = stmt.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return n;
+	}
+	
+	public Object[] getLastRoom(String newID) {
+		Object[] vd = null;
+		for (Object[] o : getAllInfoRoom()) {
+			if(o[0].equals(newID)) {
+				vd = o;
+			}
+		}
+		return vd;
+	}
+	public Room revertRowOfTable(ResultSet rs) {
+		Room r = null;
+		try {
+			r = new Room(rs.getString(1), rs.getString(3), rs.getString(2));
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return r;
+	}
+	
+	public boolean deleteRoom(String IDdelt) {
+		ConnectDB.getInstance();
+		Connection con = ConnectDB.getConnection();
+		PreparedStatement stmt = null;
+		boolean flag = false;
+		String sql = "delete from Room where RoomNo = ?";
+		try {
+			stmt = con.prepareStatement(sql);
+			stmt.setString(1, IDdelt);
+			stmt.executeUpdate();
+			flag = true;
+		}catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return flag;
+	}
+	
+	public int findRoom(String roomNo) {
+		for(int i = 0; i < getAllInfoRoom().size(); i++) {
+			if(getAllInfoRoom().get(i)[0].equals(roomNo)) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	
+	public int updateRoom(String roomNo, String roomType, String roomStatus) {
+		ConnectDB.getInstance();
+		Connection con = ConnectDB.getConnection();
+		PreparedStatement stm = null;
+		String sql = "update Room set RoomTypeRoomType = ?, Status = ? where RoomNo = ?";
+		try {
+			stm = con.prepareStatement(sql);
+			stm.setString(1, roomType);
+			stm.setString(2, roomStatus);
+			stm.setString(3, roomNo);
+			stm.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return findRoom(roomNo);
+	}
+	
+	
+}

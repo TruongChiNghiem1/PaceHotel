@@ -1,0 +1,10 @@
+package dao;
+
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+
+import entity.Employee;
+
+public interface EmployeeIDao extends Remote {
+	public Employee login(String employeeID, String password) throws RemoteException;
+}

@@ -5,10 +5,16 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.Serializable;
+import java.rmi.AccessException;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.Registry;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -20,20 +26,24 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
-import dao.Service_DAO;
+import dao.ServiceIDao;
 import entity.Service;
 
-public class frmServiceManager extends JFrame implements ActionListener {
+public class frmServiceManager extends JFrame implements ActionListener, Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -1054668439002440806L;
 	private JLabel pServiceID, pServiceName, pPrice, pTitle;
 	private JTextField inputServiceID, inputServiceName, inputPrice, inputFind;
 	private JButton btnAdd, btnClear, btnUpdate, btnDelete, btnFind, btnSave;
 	private JTable tbService;
 	private DefaultTableModel model;
 	private JPanel sectionBorder;
-	private Service_DAO serviceList;
+	private ServiceIDao serviceList;
 	private int index = 1;
 
-	public frmServiceManager() {
+	public frmServiceManager(Registry registry) throws AccessException, RemoteException, NotBoundException {
 		setTitle("Service manager");
 //		setDefaultCloseOperation(frmRoomManage.EXIT_ON_CLOSE);
 		setLocationRelativeTo(null);
@@ -83,7 +93,8 @@ public class frmServiceManager extends JFrame implements ActionListener {
 
 		String[] cols = { "STT", "Service ID", "Service Name", "Price" };
 		model = new DefaultTableModel(cols, 0);
-		serviceList = new Service_DAO();
+		serviceList = (ServiceIDao) registry.lookup("serviceIDao");
+
 		for (Service s : serviceList.getAllService()) {
 			Object[] service = { index, s.getServiceID(), s.getServiceName(), s.getPrice() };
 			model.addRow(service);
@@ -155,31 +166,31 @@ public class frmServiceManager extends JFrame implements ActionListener {
 
 		tbService.addMouseListener(new MouseListener() {
 
-			@Override
+
 			public void mouseReleased(MouseEvent e) {
 				// TODO Auto-generated method stub
 
 			}
 
-			@Override
+
 			public void mousePressed(MouseEvent e) {
 				// TODO Auto-generated method stub
 
 			}
 
-			@Override
+
 			public void mouseExited(MouseEvent e) {
 				// TODO Auto-generated method stub
 
 			}
 
-			@Override
+
 			public void mouseEntered(MouseEvent e) {
 				// TODO Auto-generated method stub
 
 			}
 
-			@Override
+
 			public void mouseClicked(MouseEvent e) {
 				renderRowOfTable();
 
@@ -187,18 +198,39 @@ public class frmServiceManager extends JFrame implements ActionListener {
 		});
 	}
 
-	@Override
+
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource().equals(btnAdd)) {
 			if(validData()) {
-				Add();
+				try {
+					Add();
+				} catch (HeadlessException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 			}
 		} else if (e.getSource().equals(btnFind)) {
-			Find();
+			try {
+				Find();
+			} catch (HeadlessException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (RemoteException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 		} else if (e.getSource().equals(btnClear)) {
 			Clear();
 		} else if (e.getSource().equals(btnDelete)) {
-			Delete();
+			try {
+				Delete();
+			} catch (RemoteException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 		} else if (e.getSource().equals(btnUpdate)) {
 			
 			if (btnUpdate.getText().equals("Update")) {
@@ -212,7 +244,15 @@ public class frmServiceManager extends JFrame implements ActionListener {
 			}
 		} else if (e.getSource().equals(btnSave)) {
 			if(validData()) {
-				Update();
+				try {
+					Update();
+				} catch (HeadlessException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 			}
 		}
 	}
@@ -252,12 +292,12 @@ public class frmServiceManager extends JFrame implements ActionListener {
 		return true;
 	}
 
-	public void Add() {
+	public void Add() throws HeadlessException, RemoteException {
 		String ServiceID = inputServiceID.getText();
 		String ServiceName = inputServiceName.getText();
 		String Price = inputPrice.getText();
 
-		Service s = new Service(ServiceID, ServiceName, Double.parseDouble(Price));
+		Service s = new Service(ServiceID, ServiceName, Double.parseDouble(Price), null);
 		if (serviceList.addService(s) != 0) {
 			Object[] row = { index, s.getServiceID(), s.getServiceName(), s.getPrice() };
 			model.addRow(row);
@@ -267,7 +307,7 @@ public class frmServiceManager extends JFrame implements ActionListener {
 		}
 	}
 
-	public void Find() {
+	public void Find() throws HeadlessException, RemoteException {
 		String IDFind = inputFind.getText();
 		if (serviceList.findService(IDFind) == -1) {
 			JOptionPane.showMessageDialog(null, "ID does not exist !");
@@ -277,7 +317,7 @@ public class frmServiceManager extends JFrame implements ActionListener {
 		}
 	}
 
-	public void Delete() {
+	public void Delete() throws RemoteException {
 		int r = tbService.getSelectedRow();
 		if (r != -1) {
 			int notice = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete this row?", "Delete",
@@ -292,10 +332,10 @@ public class frmServiceManager extends JFrame implements ActionListener {
 		}
 	}
 
-	public void Update() {
+	public void Update() throws HeadlessException, RemoteException {
 		String IDUpdate = inputServiceID.getText();
 		String NewName = inputServiceName.getText();
-		String Price = inputPrice.getText();
+		double Price = Double.parseDouble(inputPrice.getText());
 		int notice = JOptionPane.showConfirmDialog(null, "Are you sure you want to update this row?", "Delete",
 				JOptionPane.YES_NO_OPTION);
 		if (notice == JOptionPane.YES_OPTION) {

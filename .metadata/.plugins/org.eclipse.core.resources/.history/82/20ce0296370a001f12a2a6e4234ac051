@@ -1,0 +1,46 @@
+package entity;
+
+import java.time.LocalDate;
+import java.util.Date;
+import java.util.List;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "Booking")
+public class Booking 
+{
+	@Id
+	@Column(nullable = false)
+	private int bookingId;
+	
+	private int qtyRoom;
+	private int numAdults;
+	private int numChildren;
+	private String note;
+	private LocalDate bookingDateTime;
+	private LocalDate arrivalDateTime;
+	private LocalDate departureDateTime;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "roomNo")
+	private Room room;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "employeeId")
+	private Employee employee;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "guestId")
+	private Guest guest;
+	
+	@OneToMany(mappedBy = "Booking")
+	private List<BillDetail> billDetail;
+}

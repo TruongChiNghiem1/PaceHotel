@@ -2,11 +2,9 @@ package UI;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.LayoutManager;
 import java.awt.Toolkit;
@@ -15,8 +13,12 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.lang.reflect.Array;
+import java.io.Serializable;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.Registry;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.Month;
@@ -27,24 +29,29 @@ import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
-import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
-import dao.Room_DAO;
-import entity.Room;
+import dao.RoomIDao;
 
-public class frmAllRoom extends JPanel implements MouseListener {
+public class frmAllRoom extends JPanel implements ActionListener, MouseListener, Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -5138091449693934783L;
 	private JPanel pnlCalendar, pnlAllRoom, pnlNode, pnlRed, pnlGreen, pnlOrange, pnlViolet, pnlRoom1;
 	private JTextField txtCalendar, txtRoomNumber1, txt1Room1, txt2Room1, txt3Room1, txt4Room1;
 	private JLabel lblCalendar, lblRed, lblGreen, lblOrange, lblViolet;
-	private Room_DAO roomList;
+//	private Room_DAO roomList;
+
+	
+	
 	private JPanel[] panels;
 
-	public frmAllRoom() {
+	public frmAllRoom(final Registry registry) throws MalformedURLException, RemoteException, NotBoundException, ClassNotFoundException  {
+		RoomIDao roomList = (RoomIDao) registry.lookup("roomIDao");
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
 		pnlCalendar = new JPanel();
@@ -73,8 +80,6 @@ public class frmAllRoom extends JPanel implements MouseListener {
 		pnlAllRoom = new JPanel();
 		pnlAllRoom.setLayout(new BoxLayout(pnlAllRoom, BoxLayout.Y_AXIS));
 
-		roomList = new Room_DAO();
-
 		JPanel panel = new JPanel();
 		panel.setPreferredSize(new Dimension(1090, 150));
 
@@ -95,7 +100,7 @@ public class frmAllRoom extends JPanel implements MouseListener {
 		
 			for (int j = 0; j < lengthRoom3; j++) {
 				JPanel pnlRoom1 = new JPanel();
-				pnlRoom1.setName(roomList.getAllRoom().get(index).getRoom());
+				pnlRoom1.setName(roomList.getAllRoom().get(index).getRoomNo());
 				panels[index] = pnlRoom1;
 				
 				JPanel boxRow = new JPanel((LayoutManager) new FlowLayout(FlowLayout.LEFT));
@@ -107,7 +112,7 @@ public class frmAllRoom extends JPanel implements MouseListener {
 				txtRoomNumber1.setEditable(false);
 				txtRoomNumber1.setPreferredSize(new Dimension(50, 30));
 
-				txtRoomNumber1.setText(roomList.getAllRoom().get(index).getRoom());
+				txtRoomNumber1.setText(roomList.getAllRoom().get(index).getRoomNo());
 				txtRoomNumber1.setFont(new Font("Arial", Font.BOLD, 30));
 				txtRoomNumber1.setForeground(Color.WHITE);
 
@@ -117,7 +122,7 @@ public class frmAllRoom extends JPanel implements MouseListener {
 				txt1Room1.setFont(new Font("Arial", Font.BOLD, 20));
 				txt1Room1.setForeground(Color.WHITE);
 
-				txt1Room1.setText(roomList.getAllRoom().get(index).getRoomType());
+				txt1Room1.setText(roomList.getAllRoom().get(index).getRoomNo());
 
 				txt2Room1 = new JTextField();
 				txt2Room1.setEditable(false);
@@ -196,7 +201,12 @@ public class frmAllRoom extends JPanel implements MouseListener {
 		                	JFrame infoBookingFrame = new JFrame();
 		                    JPanel clickedPanel = (JPanel)e.getSource();
 		                    String panelName = clickedPanel.getName();
-		                    infoBookingFrame = new frmInforBooking(panelName);
+		                    try {
+								infoBookingFrame = new frmInforBooking(panelName, registry);
+							} catch (RemoteException | NotBoundException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
 		                    infoBookingFrame.setVisible(true);
 		                }
 		            });
@@ -260,32 +270,32 @@ public class frmAllRoom extends JPanel implements MouseListener {
 		
 	}
 
-	@Override
 	public void mouseClicked(MouseEvent e) {
 		// TODO Auto-generated method stub
 		
 	}
 
-	@Override
 	public void mousePressed(MouseEvent e) {
 		// TODO Auto-generated method stub
 		
 	}
 
-	@Override
 	public void mouseReleased(MouseEvent e) {
 		// TODO Auto-generated method stub
 		
 	}
 
-	@Override
 	public void mouseEntered(MouseEvent e) {
 		// TODO Auto-generated method stub
 		
 	}
 
-	@Override
 	public void mouseExited(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
 		
 	}

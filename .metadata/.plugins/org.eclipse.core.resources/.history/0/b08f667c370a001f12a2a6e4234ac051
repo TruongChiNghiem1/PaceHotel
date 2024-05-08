@@ -1,0 +1,27 @@
+package entity;
+
+import java.time.LocalDate;
+import java.util.Date;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "Booking")
+public class Booking 
+{
+	@Id
+	@Column(nullable = false)
+	private int bookingId;
+	
+	private int qtyRoom;
+	private int numAdults;
+	private int numChildren;
+	private String note;
+	private LocalDate bookingDateTime;
+	private LocalDate arrivalDateTime;
+	private LocalDate departureDateTime;
+
+}

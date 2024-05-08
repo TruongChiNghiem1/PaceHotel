@@ -7,6 +7,8 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.Serializable;
+import java.rmi.registry.Registry;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -17,20 +19,23 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
-import dao.Service_DAO;
+
 import entity.Service;
 
-public class frmService extends JPanel implements ActionListener
+public class frmService extends JPanel implements ActionListener, Serializable
 {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -5112460979510726595L;
 	private JLabel lblRoomID, lblServiceName, lblQuantity, lblNote, lblTotal;
 	private JTextField txtRoomID, txtQuantity, txtNote, txtTotal;
 	private JButton btnAdd, btnCancel, btnOrder;
 	private JTable tbService;
 	private DefaultTableModel model;
 	private JComboBox<String> cbServiceName;
-	private Service_DAO listService;
 	
-	public frmService()
+	public frmService(Registry registry)
 	{
 		setLayout(new BorderLayout());
 		JPanel pnNorth = new JPanel();
@@ -56,10 +61,10 @@ public class frmService extends JPanel implements ActionListener
 		pnC1.add(lblServiceName = new JLabel("Service Name:"));
 		pnC1.add(cbServiceName = new JComboBox<String>());
 		
-		listService = new Service_DAO();
-		for (Service sv : listService.getAllService()) {
-			cbServiceName.addItem(sv.getServiceName());
-		}
+//		listService = new Service_DAO();
+//		for (Service sv : listService.getAllService()) {
+//			cbServiceName.addItem(sv.getServiceName());
+//		}
 		
 		pnC1.add(lblQuantity = new JLabel("Quantity"));
 		pnC1.add(txtQuantity = new JTextField());
@@ -130,7 +135,6 @@ public class frmService extends JPanel implements ActionListener
 		
 	}
 
-	@Override
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
 		if(e.getSource().equals(btnAdd)) {

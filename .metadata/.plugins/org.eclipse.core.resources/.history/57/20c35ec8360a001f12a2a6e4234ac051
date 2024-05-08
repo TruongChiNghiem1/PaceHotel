@@ -1,0 +1,25 @@
+package entity;
+
+import java.time.LocalDate;
+import java.util.Date;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "Employee")
+public class Employee 
+{
+	@Id
+	@Column(nullable = false)
+	private String employeeID;
+	private String fullName; 
+	private LocalDate DOB;
+	private int gender;
+	private String phoneNo, email, password;
+	private double salary;
+	private String roleID;
+
+}

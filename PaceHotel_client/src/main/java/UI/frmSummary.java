@@ -5,6 +5,9 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.event.ActionListener;
+import java.io.Serializable;
+import java.rmi.registry.Registry;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -14,15 +17,19 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
-public class frmSummary extends JPanel
+public class frmSummary extends JPanel implements Serializable
 {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -526133524363696988L;
 	private JLabel lblEmployeeID, lblFullName, lblGender, lblPhoneNo, lblLogintime, lblLogouttime, lbTotal;
 	private JTextField txtEmployeeID, txtEmployeeName, txtPhoneNo, txtGender, txtTotal, txtLogin, txtLogout;
 	private JButton  btnCancel, btnEndShift;
 	private JTable tbService;
 	private DefaultTableModel model;
 	
-	public frmSummary()
+	public frmSummary(Registry registry)
 	{
 		setLayout(new BorderLayout());
 		

@@ -7,6 +7,10 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.Serializable;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.Registry;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -21,9 +25,14 @@ import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
-import dao.Room_DAO;
+import dao.RoomIDao;
+import service.Room_DAO;
 
-public class frmInforBooking extends JFrame implements ActionListener{
+public class frmInforBooking extends JFrame implements ActionListener, Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -7165065202248133588L;
 	private JLabel pName, pGender, pCard, pPhone, pNumOfAdults, pNumOfChildren, pTimeOfArrival, pTimeOfDeparture, pNote, pTotal,
 		pRoomType, pNumOfBed, pPrice, pSurcharge, pDiscount, pFirstHour, pNextHour,pOvernight
 		, pTitle, pRoomID;
@@ -31,9 +40,9 @@ public class frmInforBooking extends JFrame implements ActionListener{
 	inputRoomType, inputNumOfBed, inputPrice, inputSurcharge, inputDiscount, inputFirstHour,inputNextHour, inputOvernight;
 	private JButton btnCancel, btnCheckIn, btnCheckOut, btnAddService;
 	private JPanel sectionBottom, sectionCenter, sectionBorder;
-	private Room_DAO roomList;
+	private RoomIDao roomList;
 	
-	public frmInforBooking(String id)
+	public frmInforBooking(String id, Registry registry) throws RemoteException, NotBoundException
 	{
 		setTitle("Room manager");
 		setSize(1200,700);
@@ -51,7 +60,7 @@ public class frmInforBooking extends JFrame implements ActionListener{
 		JPanel pnC1 = new JPanel();
 		pnC1.setLayout(null);
 		
-		roomList = new Room_DAO();
+		RoomIDao roomList = (RoomIDao) registry.lookup("roomIDao");
 		
 		
 		btnAddService = new JButton("Add service");
@@ -94,7 +103,7 @@ public class frmInforBooking extends JFrame implements ActionListener{
 		int iRoom = roomList.findRoom(id);
 		
 		
-		inputRoomType = new JTextField(roomList.getAllRoom().get(iRoom).getRoomType());
+		inputRoomType = new JTextField(roomList.getAllRoom().get(iRoom).getRoomType().toString());
 		inputNumOfBed = new JTextField(roomList.getAllInfoRoom().get(iRoom)[3].toString());
 		inputPrice = new JTextField();
 		inputSurcharge = new JTextField(20);
@@ -315,7 +324,6 @@ public class frmInforBooking extends JFrame implements ActionListener{
 		btnAddService.setForeground(Color.white);
 	}
 
-	@Override
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
 		

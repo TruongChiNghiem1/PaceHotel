@@ -7,10 +7,13 @@ import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.sql.SQLException;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -18,24 +21,23 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
-import connectDB.ConnectDB;
-
 public class frmChucNang extends JFrame implements ActionListener {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 6224401903802245074L;
 	private JButton btnAllRoom, btnService, btnSummary, btnAdministration, btnLogout;
 	private JPanel pnService, pnCenter, pnEmployee, pnAdministation, pnSummary, pnAllRoom;
-
-	public frmChucNang() {
+	private Registry registry = LocateRegistry.getRegistry("192.168.1.9", 2000);
+	
+	public frmChucNang() throws MalformedURLException, RemoteException, ClassNotFoundException, NotBoundException {
 		super("");
 
 		createUI();
 	}
 
-	public void createUI() {
-		try {
-			ConnectDB.getInstance().connect();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+	public void createUI() throws MalformedURLException, RemoteException, ClassNotFoundException, NotBoundException {
+
 		setExtendedState(JFrame.MAXIMIZED_BOTH);
 		setLayout(new BorderLayout());
 
@@ -124,17 +126,18 @@ public class frmChucNang extends JFrame implements ActionListener {
 
 		btnAllRoom.addActionListener(this);
 		btnService.addActionListener(this);
+		btnLogout.addActionListener(this);
 		btnSummary.addActionListener(this);
 		btnAdministration.addActionListener(this);
 
 		pnService = new JPanel();
-		pnService = new frmService();
+		pnService = new frmService(registry);
 		pnEmployee = new JPanel();
-		pnEmployee = new frmEmployeeManager();
+//		pnEmployee = new frmEmployeeManager(registry);
 		pnAdministation = new JPanel();
-		pnAdministation = new frmAdministration();
+		pnAdministation = new frmAdministration(registry);
 		pnSummary = new JPanel();
-		pnSummary = new frmSummary();
+		pnSummary = new frmSummary(registry);
 
 		pnCenter = new JPanel();
 		pnCenter.setLayout(new BorderLayout());
@@ -144,12 +147,12 @@ public class frmChucNang extends JFrame implements ActionListener {
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		pnCenter.removeAll();
 		pnCenter.validate();
-		pnCenter.add(pnAllRoom = new frmAllRoom(), BorderLayout.CENTER);
+		pnCenter.add(pnAllRoom = new frmAllRoom(registry), BorderLayout.CENTER);
 		pnCenter.revalidate();
 		pnCenter.repaint();
 	}
 
-	@Override
+
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
 		Object o = e.getSource();
@@ -161,7 +164,21 @@ public class frmChucNang extends JFrame implements ActionListener {
 
 			pnCenter.removeAll();
 			pnCenter.validate();
-			pnCenter.add(pnAllRoom = new frmAllRoom(), BorderLayout.CENTER);
+			try {
+				pnCenter.add(pnAllRoom = new frmAllRoom(registry), BorderLayout.CENTER);
+			} catch (MalformedURLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (RemoteException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (ClassNotFoundException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (NotBoundException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 			pnCenter.revalidate();
 			pnCenter.repaint();
 		} else if (o.equals(btnService)) {
@@ -174,7 +191,7 @@ public class frmChucNang extends JFrame implements ActionListener {
 
 			pnCenter.removeAll();
 			pnCenter.validate();
-			pnCenter.add(pnService = new frmService(), BorderLayout.CENTER);
+			pnCenter.add(pnService = new frmService(registry), BorderLayout.CENTER);
 			pnCenter.revalidate();
 			pnCenter.repaint();
 		}
@@ -187,7 +204,7 @@ public class frmChucNang extends JFrame implements ActionListener {
 
 			pnCenter.removeAll();
 			pnCenter.validate();
-			pnCenter.add(pnAdministation = new frmAdministration(), BorderLayout.CENTER);
+			pnCenter.add(pnAdministation = new frmAdministration(registry), BorderLayout.CENTER);
 			pnCenter.revalidate();
 			pnCenter.repaint();
 		}
@@ -200,12 +217,16 @@ public class frmChucNang extends JFrame implements ActionListener {
 
 			pnCenter.removeAll();
 			pnCenter.validate();
-			pnCenter.add(pnSummary = new frmSummary(), BorderLayout.CENTER);
+			pnCenter.add(pnSummary = new frmSummary(registry), BorderLayout.CENTER);
 			pnCenter.revalidate();
+		}
+		else if (o.equals(btnLogout)) {
+			dispose();
+			new frmDangNhap();
 		}
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws MalformedURLException, RemoteException, ClassNotFoundException, NotBoundException {
 		new frmChucNang();
 	}
 }

@@ -7,18 +7,27 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.Serializable;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.Registry;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-public class frmAdministration extends JPanel implements ActionListener
+public class frmAdministration extends JPanel implements ActionListener, Serializable
 {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -1645005994411792115L;
 	private JButton btnRoomMNG, btnEmployeeManager, btnServiceManager, btnLoginHistory, btnRoomType;
-	
-	public frmAdministration()
+	private Registry registryGlobal;
+	public frmAdministration(Registry registry)
 	{
+		registryGlobal = registry;
 		setLayout(new BorderLayout());
 		
 		JPanel pnNorth = new JPanel();
@@ -68,7 +77,7 @@ public class frmAdministration extends JPanel implements ActionListener
 		btnRoomType.addActionListener(this);
 	}
 	
-	@Override
+
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
 		Object o = e.getSource();
@@ -80,7 +89,12 @@ public class frmAdministration extends JPanel implements ActionListener
 			frEmployee.setExtendedState(JFrame.MAXIMIZED_BOTH);
 			
 			JPanel pn = new JPanel();
-			pn = new frmEmployeeManager();
+			try {
+				pn = new frmEmployeeManager(registryGlobal);
+			} catch (RemoteException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 			
 			frEmployee.add(pn, BorderLayout.CENTER);
 			
@@ -90,17 +104,32 @@ public class frmAdministration extends JPanel implements ActionListener
 		else if (o.equals(btnRoomMNG))
 		{
 			JFrame fr = new JFrame();
-			fr = new frmRoomManage();
+			try {
+				fr = new frmRoomManage(registryGlobal);
+			} catch (RemoteException | NotBoundException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 //			fr.setDefaultCloseOperation(fr.EXIT_ON_CLOSE);
 			fr.setVisible(true);
 		}else if (o.equals(btnServiceManager)) {
 			JFrame fr = new JFrame();
-			fr = new frmServiceManager();
+			try {
+				fr = new frmServiceManager(registryGlobal);
+			} catch (RemoteException | NotBoundException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 //			fr.setDefaultCloseOperation(fr.EXIT_ON_CLOSE);
 			fr.setVisible(true);
 		} else if(o.equals(btnRoomType)) {
 			JFrame fr = new JFrame();
-			fr = new frmRoomType();
+			try {
+				fr = new frmRoomType(registryGlobal);
+			} catch (RemoteException | NotBoundException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 			fr.setVisible(true);
 		}
 	}

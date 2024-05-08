@@ -1,46 +1,96 @@
 package entity;
 
-public class Room {
-	private String Room, RoomType , Status;
+import java.io.Serializable;
+import java.util.List;
 
-	public Room(String room, String roomType, String status) {
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "Room")
+public class Room implements Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -2110023853689899095L;
+
+	@Id
+	@Column(nullable = false)
+	private String roomNo;
+	
+	private String status;
+
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "roomType")
+	private RoomType roomType;
+	
+	@OneToMany(mappedBy = "room")
+	private List<Booking> booking;
+
+	public Room() {
 		super();
-		Room = room;
-		RoomType = roomType;
-		Status = status;
+		// TODO Auto-generated constructor stub
+	}
+	
+	public Room(String roomNo, String status, RoomType roomType) {
+		super();
+		this.roomNo = roomNo;
+		this.status = status;
+		this.roomType = roomType;
 	}
 
-	public String getRoom() {
-		return Room;
+	public Room(String roomNo, String status, RoomType roomType, List<Booking> booking) {
+		super();
+		this.roomNo = roomNo;
+		this.status = status;
+		this.roomType = roomType;
+		this.booking = booking;
 	}
 
-	public void setRoom(String room) {
-		Room = room;
+	public String getRoomNo() {
+		return roomNo;
 	}
 
-	public String getRoomType() {
-		return RoomType;
-	}
-
-	public void setRoomType(String roomType) {
-		RoomType = roomType;
+	public void setRoomNo(String roomNo) {
+		this.roomNo = roomNo;
 	}
 
 	public String getStatus() {
-		return Status;
+		return status;
 	}
 
 	public void setStatus(String status) {
-		Status = status;
+		this.status = status;
+	}
+
+	public RoomType getRoomType() {
+		return roomType;
+	}
+
+	public void setRoomType(RoomType roomType) {
+		this.roomType = roomType;
+	}
+
+	public List<Booking> getBooking() {
+		return booking;
+	}
+
+	public void setBooking(List<Booking> booking) {
+		this.booking = booking;
 	}
 
 	@Override
 	public String toString() {
-		return "Room [Room=" + Room + ", RoomType=" + RoomType + ", Status=" + Status + "]";
+		return "Room [roomNo=" + roomNo + ", status=" + status + ", roomType=" + roomType + ", booking=" + booking
+				+ "]";
 	}
 	
 	
-	
-	
-	
+
 }

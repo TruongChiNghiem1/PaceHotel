@@ -1,0 +1,89 @@
+package entity;
+
+import java.time.LocalDate;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "HistoryLogin")
+public class HistoryLogin {
+	@Id
+	@Column(nullable = false)
+	private int loginId;
+	private LocalDate loginDateTime;
+	private LocalDate logoutDateTime;
+	private String employeeId;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "employeeId")
+	private Employee employee;
+
+	public HistoryLogin() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
+	public HistoryLogin(int loginId, LocalDate loginDateTime, LocalDate logoutDateTime, String employeeId,
+			Employee employee) {
+		super();
+		this.loginId = loginId;
+		this.loginDateTime = loginDateTime;
+		this.logoutDateTime = logoutDateTime;
+		this.employeeId = employeeId;
+		this.employee = employee;
+	}
+
+	public int getLoginId() {
+		return loginId;
+	}
+
+	public void setLoginId(int loginId) {
+		this.loginId = loginId;
+	}
+
+	public LocalDate getLoginDateTime() {
+		return loginDateTime;
+	}
+
+	public void setLoginDateTime(LocalDate loginDateTime) {
+		this.loginDateTime = loginDateTime;
+	}
+
+	public LocalDate getLogoutDateTime() {
+		return logoutDateTime;
+	}
+
+	public void setLogoutDateTime(LocalDate logoutDateTime) {
+		this.logoutDateTime = logoutDateTime;
+	}
+
+	public String getEmployeeId() {
+		return employeeId;
+	}
+
+	public void setEmployeeId(String employeeId) {
+		this.employeeId = employeeId;
+	}
+
+	public Employee getEmployee() {
+		return employee;
+	}
+
+	public void setEmployee(Employee employee) {
+		this.employee = employee;
+	}
+
+	@Override
+	public String toString() {
+		return "HistoryLogin [loginId=" + loginId + ", loginDateTime=" + loginDateTime + ", logoutDateTime="
+				+ logoutDateTime + ", employeeId=" + employeeId + ", employee=" + employee + "]";
+	}
+	
+	
+}

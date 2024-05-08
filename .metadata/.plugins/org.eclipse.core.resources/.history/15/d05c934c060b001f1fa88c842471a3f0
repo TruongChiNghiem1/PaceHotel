@@ -1,0 +1,11 @@
+package dao;
+
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+import java.util.List;
+
+import entity.Room;
+
+public interface RoomIDao extends Remote {
+	public List<Room> getAllRoom() throws RemoteException;
+}

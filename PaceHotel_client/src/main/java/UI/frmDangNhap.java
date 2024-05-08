@@ -5,11 +5,15 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Image;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.Serializable;
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.sql.SQLException;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -19,16 +23,19 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import connectDB.ConnectDB;
-import dao.Employee_DAO;
+import dao.EmployeeIDao;
 import entity.Employee;
 
-public class frmDangNhap extends JFrame implements ActionListener
+public class frmDangNhap extends JFrame implements ActionListener, Serializable
 {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 8198317889788230564L;
 	private JLabel lblUserName, lblPassword;
 	private JTextField txtUser, txtPass;
 	private JButton btnLogin, btnSigup;
-	private Employee_DAO EmployeeDAO;
+//	private Employee_DAO EmployeeDAO;
 	
 	public frmDangNhap()
 	{
@@ -126,7 +133,7 @@ public class frmDangNhap extends JFrame implements ActionListener
 		setVisible(true);
 	}
 	
-	@Override
+
 	public void actionPerformed(ActionEvent e) {
 		Object o = e.getSource();
 		if (o.equals(btnLogin))
@@ -143,20 +150,24 @@ public class frmDangNhap extends JFrame implements ActionListener
 	}
 	
 	@SuppressWarnings("depcrecation")
-	public void dangNhap() throws Exception
+	public void dangNhap() throws MalformedURLException, RemoteException, NotBoundException, ClassNotFoundException 
 	{
-		Employee tk = Employee_DAO.login(txtUser.getText(), txtPass.getText());
-		if (tk != null)
-		{
-			JOptionPane.showMessageDialog(null, "Login");
-		}
-		else
-		{
+		Registry registry = LocateRegistry.getRegistry("192.168.1.9", 2000);
+		
+		EmployeeIDao employeeIDao = (EmployeeIDao) registry.lookup("employeeIDao");
+		
+		Employee tk = employeeIDao.login(txtUser.getText(), txtPass.getText());
+		if (tk != null) {
+//			JOptionPane.showMessageDialog(null, "Login");
+			dispose();
+			new frmChucNang();
+		} else {
 			JOptionPane.showMessageDialog(null, "Tài khoản hoặc mật khẩu không chính xác!");
 		}
 	}
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws MalformedURLException, RemoteException, NotBoundException, ClassNotFoundException {
+
 		new frmDangNhap();
 	}
 }
