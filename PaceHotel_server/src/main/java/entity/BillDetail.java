@@ -5,6 +5,8 @@ import java.io.Serializable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -19,6 +21,7 @@ public class BillDetail implements Serializable{
 	private static final long serialVersionUID = -7250751345866332177L;
 
 	@Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(nullable = false)
 	private int billDetailId;
 	
@@ -39,6 +42,14 @@ public class BillDetail implements Serializable{
 	public BillDetail() {
 		super();
 		// TODO Auto-generated constructor stub
+	}
+	
+	public BillDetail(int qtyService, Bill bill, Booking booking, Service service) {
+		super();
+		this.qtyService = qtyService;
+		this.bill = bill;
+		this.booking = booking;
+		this.service = service;
 	}
 
 	public BillDetail(int billDetailId, int qtyService, Bill bill, Booking booking, Service service) {

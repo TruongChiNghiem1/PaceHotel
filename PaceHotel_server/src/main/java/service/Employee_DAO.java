@@ -12,6 +12,7 @@ import dao.EmployeeIDao;
 import entity.Employee;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
+import jakarta.persistence.TypedQuery;
 
 public class Employee_DAO extends UnicastRemoteObject implements EmployeeIDao, Serializable
 {
@@ -144,4 +145,31 @@ public class Employee_DAO extends UnicastRemoteObject implements EmployeeIDao, S
             return -1;
         }
     }
+	
+	public Employee layNhanVienTheoMa(String mnv) throws RemoteException {
+		try {
+            Employee employee = entityManager.find(Employee.class, mnv);
+            if (employee != null) {
+                return employee;
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+	}
+	
+//	lấy mã nhân viên lớn nhất để set mã tự động
+	public int layMaNVLonNhat() throws RemoteException {
+		try {
+			String sql = "SELECT CAST(MAX(SUBSTRING(e.employeeId, 2)) AS INTEGER) AS employeeIdMax FROM Employee e";
+			TypedQuery<Integer> query = entityManager.createQuery(sql, Integer.class);
+			Integer maxID = query.getSingleResult();
+            return maxID != null ? maxID : 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+	}
 }

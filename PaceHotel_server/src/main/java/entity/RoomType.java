@@ -122,7 +122,7 @@ public class RoomType implements Serializable{
 	public String toString() {
 		return "RoomType [roomType=" + roomType + ", fisrtHourFee=" + fisrtHourFee + ", nextHourFee=" + nextHourFee
 				+ ", overNightFee=" + overNightFee + ", qtyBed=" + qtyBed + ", people=" + people + ", disscount="
-				+ disscount + ", surcharge=" + surcharge + ", room=" + room + "]";
+				+ disscount + ", surcharge=" + surcharge + ", room=";
 	}
 	
 	

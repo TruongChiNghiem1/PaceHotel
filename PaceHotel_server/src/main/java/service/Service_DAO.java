@@ -6,8 +6,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.List;
 
 import dao.ServiceIDao;
-import entity.Room;
-import entity.RoomType;
+import entity.Bill;
 import entity.Service;
 import jakarta.persistence.EntityManager;
 
@@ -24,13 +23,13 @@ public class Service_DAO extends UnicastRemoteObject implements ServiceIDao, Ser
 	}
 	
 	public List<Service> getAllService() throws RemoteException {
-        try {
-            return entityManager.createQuery("SELECT s FROM Service s", Service.class).getResultList();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
+	    try {
+	        return entityManager.createQuery("SELECT s FROM Service s", Service.class).getResultList();
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        return null;
+	    }
+	}
 
 //	public Service revertRowToService(ResultSet rs) {
 //		Service s = null;
@@ -108,38 +107,19 @@ public class Service_DAO extends UnicastRemoteObject implements ServiceIDao, Ser
             return -1;
         }
     }
-	public List<Room> getAllRoom() throws RemoteException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	public List<Object[]> getAllInfoRoom() throws RemoteException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public int addRoom(Room r) throws RemoteException {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	public Object[] getLastRoom(String newID) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public boolean deleteRoom(String roomNo) throws RemoteException {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	public int findRoom(String roomNo) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	public int updateRoom(String roomNo, RoomType roomType, String roomStatus) throws RemoteException {
-		// TODO Auto-generated method stub
-		return 0;
+	
+	public Service findOneService(String serviceId) throws RemoteException {
+		try {
+			Service serviceRender = entityManager.find(Service.class, serviceId);
+            if (serviceRender != null) {
+                return serviceRender;
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
 	}
 
 }

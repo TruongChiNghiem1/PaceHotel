@@ -1,8 +1,6 @@
 package entity;
 
 import java.io.Serializable;
-import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 
 import jakarta.persistence.Column;
@@ -46,6 +44,19 @@ public class Employee implements Serializable
 	public Employee() {
 		super();
 		// TODO Auto-generated constructor stub
+	}
+	
+	public Employee(String employeeId, String fullName, String dOB, int gender, String phoneNo, String email,
+			String password, double salary) {
+		super();
+		this.employeeId = employeeId;
+		this.fullName = fullName;
+		DOB = dOB;
+		this.gender = gender;
+		this.phoneNo = phoneNo;
+		this.email = email;
+		this.password = password;
+		this.salary = salary;
 	}
 	
 	public Employee(String employeeId, String fullName, String dOB, int gender, String phoneNo, String email,

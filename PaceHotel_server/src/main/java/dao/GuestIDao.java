@@ -11,4 +11,5 @@ public interface GuestIDao extends Remote {
 	public List<Guest> getAllGuest() throws RemoteException;
 	public int addGuest(Guest g) throws RemoteException, ParseException;
 	public int findGuest(String GuestID) throws RemoteException;
+	public Guest getOneGuest(String guestID) throws RemoteException;
 }

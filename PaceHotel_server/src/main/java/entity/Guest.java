@@ -34,6 +34,20 @@ public class Guest implements Serializable{
 		super();
 		// TODO Auto-generated constructor stub
 	}
+	
+	public Guest(String guestID, String fullName, String dOB, int gender, String phoneNo, String email,
+			String indentityCard, String address, float starPoints) {
+		super();
+		this.guestID = guestID;
+		this.fullName = fullName;
+		DOB = dOB;
+		this.gender = gender;
+		this.phoneNo = phoneNo;
+		this.email = email;
+		IndentityCard = indentityCard;
+		Address = address;
+		this.starPoints = starPoints;
+	}
 
 	public Guest(String guestID, String fullName, String dOB, int gender, String phoneNo, String email,
 			String indentityCard, String address, float starPoints, List<Booking> booking, List<Bill> bill) {

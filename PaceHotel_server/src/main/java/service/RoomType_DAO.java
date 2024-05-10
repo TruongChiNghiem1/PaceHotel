@@ -30,6 +30,16 @@ public class RoomType_DAO extends UnicastRemoteObject implements RoomTypeIDao, S
         }
     }
 	
+//	public RoomType revertRowToRoomType(ResultSet rs) {
+//		RoomType rt = null;
+//		try {
+//			rt = new RoomType(rs.getString(1), rs.getDouble(2), rs.getDouble(3), rs.getDouble(4), rs.getInt(5), rs.getInt(6), rs.getFloat(7), rs.getFloat(8));
+//		} catch (SQLException e) {
+//			e.printStackTrace();
+//		}
+//		return rt;
+//	}
+	
 	public RoomType getRoomType(String roomTypeId) throws RemoteException {
         try {
             return entityManager.find(RoomType.class, roomTypeId);

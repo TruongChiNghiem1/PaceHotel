@@ -3,123 +3,219 @@ package UI;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.Serializable;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
+import java.text.ParseException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
-public class frmSummary extends JPanel implements Serializable
-{
+import dao.BookingIDao;
+import dao.EmployeeIDao;
+import entity.Employee;
+import service.Booking_DAO;
+import service.Employee_DAO;
+
+public class frmSummary extends JPanel implements ActionListener{
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -526133524363696988L;
-	private JLabel lblEmployeeID, lblFullName, lblGender, lblPhoneNo, lblLogintime, lblLogouttime, lbTotal;
-	private JTextField txtEmployeeID, txtEmployeeName, txtPhoneNo, txtGender, txtTotal, txtLogin, txtLogout;
-	private JButton  btnCancel, btnEndShift;
-	private JTable tbService;
+	private static final long serialVersionUID = -8114348141892882245L;
+	private JPanel pnlStatistics,pnlFunction,pnlTable,pnlImport;
+	private JLabel lblStatistics,lblEmployeeName,lblRoomType,lblFromDate,lblToDate;
+	private JTextField txtEmployeeName,txtRoomType,txtFromDate,txtFind,txtToDate;
+	private JButton btnFilter,btnFind;
+	private JTable tbStatistics;
 	private DefaultTableModel model;
-	
-	public frmSummary(Registry registry)
-	{
-		setLayout(new BorderLayout());
+	private JComboBox<String> cbEmployeeName;
+	private EmployeeIDao employeeList;
+	private BookingIDao bookingList;
+	public frmSummary(Registry registry) throws RemoteException, NotBoundException {
+		employeeList = (EmployeeIDao) registry.lookup("employeeIDao");
 		
-		JPanel pnNorth = new JPanel();
-		pnNorth.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 20));
+		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		
-		JLabel lblTitle = new JLabel("Summary");
-		lblTitle.setFont(new Font("Arial", Font.BOLD, 25));
+		pnlStatistics = new JPanel();
+		pnlStatistics.setBounds(0, 0, screenSize.width-300, 70);
+		pnlStatistics.setBackground(new Color(97,118,126)); 
+		lblStatistics = new JLabel("Statistics");
+		lblStatistics.setFont(new Font("Arial", Font.BOLD, 25));
+		lblStatistics.setBounds((screenSize.width-300)/2-100, 20, 200, 30);
 		
-		lblTitle.setForeground(Color.BLACK);
-		pnNorth.add(lblTitle);
-		pnNorth.setBackground(new Color(97,118,126));
+		pnlTable = new JPanel();
+		pnlTable.setBounds(0, 70, screenSize.width-300, screenSize.height-220);
+		pnlImport = new JPanel();
+		pnlTable.setBackground(new Color(166,180,184));
+		lblEmployeeName = new JLabel("Employee Name:");
+		pnlImport.add(cbEmployeeName = new JComboBox<String>());
 		
-		JPanel pnCenter = new JPanel();
-		pnCenter.setLayout(new BorderLayout());
+		for (Employee e : employeeList.getAllEmployees()) {
+			cbEmployeeName.addItem(e.getEmployeeId() + " - " + e.getFullName());
+		}
 		
-		JPanel pnC1 = new JPanel();
-		pnC1.setLayout(null);
-		pnC1.setPreferredSize(new Dimension(pnCenter.getWidth(), 90));
-		pnC1.setBackground(new Color(166,180,184));
+		lblFromDate = new JLabel("From Date:");
+		pnlImport.add(lblFromDate ,BorderLayout.CENTER);
+		txtFromDate = new JTextField(10);
+		pnlImport.add(txtFromDate,BorderLayout.CENTER);
+		lblToDate = new JLabel("To Date:");
+		pnlImport.add(lblToDate ,BorderLayout.CENTER);
+		txtToDate = new JTextField(10);
+		pnlImport.add(txtToDate,BorderLayout.CENTER);
+		btnFilter = new JButton("Filter");
+		btnFilter.setPreferredSize(new Dimension(80, 30));
+		btnFilter.setBackground(new Color(0, 0, 0));
+		btnFilter.setForeground(Color.white);
+		btnFilter.setBorder(null);
+		pnlImport.add(btnFilter,BorderLayout.CENTER);
+		pnlImport.setBackground(new Color(166,180,184));
+		pnlImport.setBounds(0, 30, screenSize.width-300, 50);
 		
-		pnC1.add(lblEmployeeID = new JLabel("Employee ID:"));
-		pnC1.add(txtEmployeeID = new JTextField());
-		pnC1.add(lblFullName = new JLabel("Full Name:"));
-		pnC1.add(txtEmployeeName = new JTextField());
-		pnC1.add(lblGender = new JLabel("Gender: "));
-		pnC1.add(txtGender = new JTextField());
-		pnC1.add(lblPhoneNo = new JLabel("PhoneNo: "));
-		pnC1.add(txtPhoneNo = new JTextField());
-		pnC1.add(lblLogintime = new JLabel("Login time: "));
-		pnC1.add(txtLogin = new JTextField());
-		pnC1.add(lblLogouttime = new JLabel("Logout time: "));
-		pnC1.add(txtLogout = new JTextField());
-		pnC1.add(lbTotal = new JLabel("Total: "));
+		String[] tieuDe = {"STT","Room Type","Room ID","Check in","CheckOut","GuestName","Total"};
+		model = new DefaultTableModel(tieuDe, 0);
+		JScrollPane sc = new JScrollPane();
+		sc.setViewportView(tbStatistics = new JTable(model));
+		tbStatistics.getTableHeader().setBackground(new Color(228,201,139));
+		sc.setBounds(20, 100, screenSize.width-340, 500);
 		
-		lblEmployeeID.setBounds(15, 10, 80, 20);
-		txtEmployeeID.setBounds(lblEmployeeID.getX() + 80, lblEmployeeID.getY(), 120, 20);
-		lblFullName.setBounds(lblEmployeeID.getX()+ 250,10, 130, 20);
-		txtEmployeeName.setBounds(lblFullName.getX()+ 70 , 10, 200, 20);
-		lblGender.setBounds(txtEmployeeName.getX() + txtEmployeeName.getWidth() + 20, txtEmployeeName.getY(), 50, 20);
-		txtGender.setBounds(lblGender.getX() + 50, lblGender.getY(), 100, 20);
-		lblPhoneNo.setBounds(lblPhoneNo.getX() + 750 , 10, 80, 20);
-		txtPhoneNo.setBounds(lblPhoneNo.getX()+ txtPhoneNo.getX() + 60, 10, 250, 20);
-		lblLogintime.setBounds(15, 50, 80, 20);
-		txtLogin.setBounds(lblEmployeeID.getX() + 80 , 50, 80, 20);
-		lblLogouttime.setBounds(lblEmployeeID.getX()+ 250, 50, 80, 20);
-		txtLogout.setBounds(lblFullName.getX()+ 90, 50, 80, 20);
 		
-		JPanel pnC2 = new JPanel();
-		pnC2.setLayout(new BorderLayout());
 		
-		String[] cols = {"STT", "Guest Name", "Payment Date", "Discount", "Total", "Note"};
-		model = new DefaultTableModel(cols, 0);
-		tbService = new JTable(model);
+		pnlFunction = new JPanel();
+		pnlFunction.setBackground(new Color(97,118,126)); 
+		pnlFunction.setBounds(0, screenSize.height-150, screenSize.width-300, 80);
+		txtFind = new JTextField();
+		txtFind.setBounds(20, 25, 150, 30);
+		txtFind.setBorder(null);
+		btnFind = new JButton("Find");
+		btnFind.setBounds(190, 25, 70, 30);
+		btnFind.setBackground(new Color(0, 0, 162));
+		btnFind.setForeground(Color.white);
+		btnFind.setBorder(null);
+
 		
-		tbService.getTableHeader().setBackground(new Color(228,201,139));
+		add(pnlStatistics);
+		pnlStatistics.add(lblStatistics);
+		add(pnlFunction);
+		pnlFunction.add(txtFind);
+		pnlFunction.add(btnFind);
+		add(pnlTable);
+		pnlTable.add(pnlImport);
+		pnlTable.add(sc);
 		
-		JScrollPane pane = new JScrollPane(tbService);
+		setLayout(null);
+		pnlStatistics.setLayout(null);
+		pnlTable.setLayout(null);
+		pnlFunction.setLayout(null);
 		
-		pnC2.add(pane, BorderLayout.CENTER);
-		
-		JPanel pnC3 = new JPanel();
-		pnC3.setLayout(new FlowLayout(FlowLayout.RIGHT,5, 15));
-		pnC3.setBackground(new Color(166,180,184));
-		pnC3.add(lbTotal);
-		pnC3.add(txtTotal = new JTextField(10));
-		
-		pnCenter.add(pnC1, BorderLayout.NORTH);
-		pnCenter.add(pnC2, BorderLayout.CENTER);
-		pnCenter.add(pnC3, BorderLayout.SOUTH);
-		
-		JPanel pnSouth = new JPanel();
-		pnSouth.setLayout(new FlowLayout(FlowLayout.RIGHT, 10, 20));
-		pnSouth.setBackground(new Color(97,118,126));
-		
-		pnSouth.add(btnCancel = new JButton("Cancel"));
-		pnSouth.add(btnEndShift = new JButton("End Shift"));
-		
-		add(pnNorth, BorderLayout.NORTH);
-		add(pnCenter, BorderLayout.CENTER);
-		add(pnSouth, BorderLayout.SOUTH);
-		
-		btnCancel.setFocusable(false);
-		btnEndShift.setFocusable(false);
-		
-		btnCancel.setBackground(new Color(126,126,126));
-		btnCancel.setForeground(Color.white);
-		btnEndShift.setBackground(new Color(255,165,0));
-		btnEndShift.setForeground(Color.white);
-		
-		txtTotal.setEditable(false);
+		btnFilter.addActionListener(this);
 	}
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		// TODO Auto-generated method stub
+		if(e.getSource().equals(btnFilter)) {
+			try {
+				if(validData()) {
+					filter();
+				}
+			} catch (ParseException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (RemoteException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}
+	}
+	
+	public void filter() throws ParseException, RemoteException {
+		model.getDataVector().removeAllElements();
+		model.fireTableDataChanged();
+		
+		bookingList = new Booking_DAO(null);
+		
+		String employeeIDName = cbEmployeeName.getSelectedItem().toString();
+		String employeeID = employeeIDName.substring(0, 4);
+		String fromDate = txtFromDate.getText();
+		String toDate = txtToDate.getText();
+		System.out.println(employeeID);
+		
+		int index = 1;
+		if(fromDate.equalsIgnoreCase("") && toDate.equalsIgnoreCase("")) {
+			fromDate = "1970-01-01 00:00:00";
+			LocalDateTime current = LocalDateTime.now();
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+			toDate = current.format(formatter);
+			
+			for (Object[] o : bookingList.filterStatistics(employeeID, fromDate, toDate)) {
+				Object[] rowData = {index, o[0], o[1], o[2], o[3], o[4], o[5]};
+				model.addRow(rowData);
+				index++;
+			}
+		} else if (!fromDate.equalsIgnoreCase("") && toDate.equalsIgnoreCase("")) {
+			fromDate += " 00:00:00";
+			LocalDateTime current = LocalDateTime.now();
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+			toDate = current.format(formatter);
+			for (Object[] o : bookingList.filterStatistics(employeeID, fromDate, toDate)) {
+				Object[] rowData = {index, o[0], o[1], o[2], o[3], o[4], o[5]};
+				model.addRow(rowData);
+				index++;
+			}
+		} else if (fromDate.equalsIgnoreCase("") && !toDate.equalsIgnoreCase("")) {
+			fromDate = "1970-01-01 00:00:00";
+			toDate += " 23:59:59";
+			for (Object[] o : bookingList.filterStatistics(employeeID, fromDate, toDate)) {
+				Object[] rowData = {index, o[0], o[1], o[2], o[3], o[4], o[5]};
+				model.addRow(rowData);
+				index++;
+			}
+		} else {
+			for (Object[] o : bookingList.filterStatistics(employeeID, fromDate, toDate)) {
+				Object[] rowData = {index, o[0], o[1], o[2], o[3], o[4], o[5]};
+				model.addRow(rowData);
+				index++;
+			}
+		}
+		
+		
+	}
+	
+	private void showMessage(String txt, JTextField focus) {
+		JOptionPane.showMessageDialog(null, txt);
+		focus.requestFocus();
+	}
+
+	private boolean validData() {
+		String FromDate = txtFromDate.getText();
+		String ToDate = txtToDate.getText();
+		
+		if(!FromDate.equalsIgnoreCase("")) {
+			if (!(FromDate.length() > 0 && FromDate.matches("\\d{4}\\-(0?[1-9]|1[012])\\-(0?[1-9]|[12][0-9]|3[01])*"))) {
+				showMessage("Ngày bắt đầu phải đúng định dạng yyyy-mm-dd", txtFromDate);
+				return false;
+			}
+		}
+		if(!ToDate.equalsIgnoreCase("")) {
+			if (!(ToDate.length() > 0 && ToDate.matches("\\d{4}\\-(0?[1-9]|1[012])\\-(0?[1-9]|[12][0-9]|3[01])*"))) {
+				showMessage("Ngày kết thúc phải đúng định dạng yyyy-mm-dd", txtToDate);
+				return false;
+			}
+		}
+		
+		return true;
+	}
+
 }

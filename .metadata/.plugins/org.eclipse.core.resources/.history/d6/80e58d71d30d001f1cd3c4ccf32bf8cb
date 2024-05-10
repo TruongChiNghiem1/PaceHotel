@@ -1,0 +1,45 @@
+package server;
+
+import java.rmi.AlreadyBoundException;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+
+import dao.EmployeeIDao;
+import dao.GuestIDao;
+import dao.RoomIDao;
+import dao.RoomTypeIDao;
+import dao.ServiceIDao;
+import jakarta.persistence.EntityManager;
+import service.Employee_DAO;
+import service.Guest_DAO;
+import service.RoomType_DAO;
+import service.Room_DAO;
+import service.Service_DAO;
+import untils.EntityManagerFactoryUtil;
+
+public class ServerRMI {
+	public static void main(String[] args) throws RemoteException, AlreadyBoundException {
+
+		// Create a registry
+		Registry registry = LocateRegistry.createRegistry(2000);
+
+		EntityManagerFactoryUtil entityManagerFactory = new EntityManagerFactoryUtil("server_hotel");
+		EntityManager entityManager = entityManagerFactory.getEnManager();
+		
+		EmployeeIDao employeeIDao = new Employee_DAO(entityManager); // Remote Object
+		RoomIDao roomIDao = new Room_DAO(entityManager);
+		RoomTypeIDao roomTypeIDao = new RoomType_DAO(entityManager);
+		GuestIDao guestIDao = new Guest_DAO(entityManager);
+		ServiceIDao serviceIDao = new Service_DAO(entityManager);
+		
+		registry.bind("employeeIDao", employeeIDao);
+		registry.bind("roomIDao", roomIDao);
+		registry.bind("roomTypeIDao", (Remote) roomTypeIDao);
+		registry.bind("guestIDao", guestIDao);
+		registry.bind("serviceIDao", (Remote) serviceIDao);
+
+		System.out.println("RMI Server ready");
+	}
+}

@@ -87,7 +87,7 @@ public class Room implements Serializable{
 
 	@Override
 	public String toString() {
-		return "Room [roomNo=" + roomNo + ", status=" + status + ", roomType=" + roomType + ", booking=" + booking
+		return "Room [roomNo=" + roomNo + ", status=" + status + ", roomType=," + "booking=" + booking
 				+ "]";
 	}
 	

@@ -7,7 +7,7 @@ import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.net.MalformedURLException;
+import java.io.Serializable;
 import java.net.URL;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -18,28 +18,39 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
-public class frmChucNang extends JFrame implements ActionListener {
+import dao.EmployeeIDao;
+import entity.Employee;
+
+public class frmChucNang extends JFrame implements ActionListener, Serializable {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 6224401903802245074L;
+	private static final long serialVersionUID = 6793627072926375358L;
 	private JButton btnAllRoom, btnService, btnSummary, btnAdministration, btnLogout;
 	private JPanel pnService, pnCenter, pnEmployee, pnAdministation, pnSummary, pnAllRoom;
-	private Registry registry = LocateRegistry.getRegistry("192.168.1.9", 2000);
-	
-	public frmChucNang() throws MalformedURLException, RemoteException, ClassNotFoundException, NotBoundException {
-		super("");
+	private JTextField txtTenNV;
+	private Registry registry = LocateRegistry.getRegistry("192.168.1.19", 2000);
 
-		createUI();
-	}
 
-	public void createUI() throws MalformedURLException, RemoteException, ClassNotFoundException, NotBoundException {
+	public EmployeeIDao employee_dao;
+
+	boolean flag = true;
+
+	public static String maNhanVien = null;
+	private EmployeeIDao listEmployee = (EmployeeIDao) registry.lookup("employeeIDao");
+
+	public frmChucNang(String maNV) throws RemoteException, NotBoundException {
+		employee_dao = (EmployeeIDao) registry.lookup("employeeIDao");
 
 		setExtendedState(JFrame.MAXIMIZED_BOTH);
 		setLayout(new BorderLayout());
+
+		maNhanVien = maNV;
 
 		JPanel pnWeast = new JPanel();
 		pnWeast.setLayout(new BorderLayout());
@@ -79,9 +90,12 @@ public class frmChucNang extends JFrame implements ActionListener {
 
 		pnC1.add(btnAllRoom = new JButton("All Room"));
 		pnC1.add(btnService = new JButton("Service"));
-		pnC1.add(btnSummary = new JButton("Summary"));
+		pnC1.add(btnSummary = new JButton("Statistic"));
 		pnC1.add(btnAdministration = new JButton("Administration"));
 		pnC1.add(btnLogout = new JButton("Log out"));
+
+		pnC1.add(txtTenNV = new JTextField(12));
+		txtTenNV.setText(employee_dao.layNhanVienTheoMa(maNV).getFullName());
 
 		btnAllRoom.setBounds(0, 0, 300, 40);
 		btnAllRoom.setFont(new Font("Arial", Font.BOLD, 20));
@@ -122,18 +136,20 @@ public class frmChucNang extends JFrame implements ActionListener {
 		btnService.setFocusable(false);
 		btnSummary.setFocusable(false);
 		btnAdministration.setFocusable(false);
+		txtTenNV.setBounds(0, 580, 150, 20);
+		txtTenNV.setEditable(false);
 		btnLogout.setFocusable(false);
 
 		btnAllRoom.addActionListener(this);
 		btnService.addActionListener(this);
-		btnLogout.addActionListener(this);
 		btnSummary.addActionListener(this);
 		btnAdministration.addActionListener(this);
+		btnLogout.addActionListener(this);
 
 		pnService = new JPanel();
 		pnService = new frmService(registry);
 		pnEmployee = new JPanel();
-//		pnEmployee = new frmEmployeeManager(registry);
+		pnEmployee = new frmEmployeeManager(registry);
 		pnAdministation = new JPanel();
 		pnAdministation = new frmAdministration(registry);
 		pnSummary = new JPanel();
@@ -147,12 +163,25 @@ public class frmChucNang extends JFrame implements ActionListener {
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		pnCenter.removeAll();
 		pnCenter.validate();
-		pnCenter.add(pnAllRoom = new frmAllRoom(registry), BorderLayout.CENTER);
+		pnCenter.add(pnAllRoom = new frmAllRoom(maNV, registry), BorderLayout.CENTER);
 		pnCenter.revalidate();
 		pnCenter.repaint();
+
+		for (Employee e : listEmployee.getAllEmployees()) {
+			if (e.getEmployeeId().equalsIgnoreCase(maNhanVien)) {
+				if (e.getRoleId().getRoleTitle().equalsIgnoreCase("Admin")) {
+					btnSummary.setVisible(true);
+					btnAdministration.setVisible(true);
+				} else {
+					btnSummary.setVisible(false);
+					btnAdministration.setVisible(false);
+				}
+			}
+		}
+
 	}
 
-
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
 		Object o = e.getSource();
@@ -165,14 +194,8 @@ public class frmChucNang extends JFrame implements ActionListener {
 			pnCenter.removeAll();
 			pnCenter.validate();
 			try {
-				pnCenter.add(pnAllRoom = new frmAllRoom(registry), BorderLayout.CENTER);
-			} catch (MalformedURLException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+				pnCenter.add(pnAllRoom = new frmAllRoom(maNhanVien, registry), BorderLayout.CENTER);
 			} catch (RemoteException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			} catch (ClassNotFoundException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			} catch (NotBoundException e1) {
@@ -191,7 +214,15 @@ public class frmChucNang extends JFrame implements ActionListener {
 
 			pnCenter.removeAll();
 			pnCenter.validate();
-			pnCenter.add(pnService = new frmService(registry), BorderLayout.CENTER);
+			try {
+				pnCenter.add(pnService = new frmService(registry), BorderLayout.CENTER);
+			} catch (RemoteException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (NotBoundException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 			pnCenter.revalidate();
 			pnCenter.repaint();
 		}
@@ -217,16 +248,27 @@ public class frmChucNang extends JFrame implements ActionListener {
 
 			pnCenter.removeAll();
 			pnCenter.validate();
-			pnCenter.add(pnSummary = new frmSummary(registry), BorderLayout.CENTER);
+			try {
+				pnCenter.add(pnSummary = new frmSummary(registry), BorderLayout.CENTER);
+			} catch (RemoteException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (NotBoundException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 			pnCenter.revalidate();
-		}
-		else if (o.equals(btnLogout)) {
-			dispose();
-			new frmDangNhap();
+		} else if (o.equals(btnLogout)) {
+			int notice = JOptionPane.showConfirmDialog(null, "Log out ?", "Log out", JOptionPane.YES_NO_OPTION);
+			if (notice == JOptionPane.YES_OPTION) {
+				this.setVisible(false);
+				frmDangNhap frm = new frmDangNhap();
+				frm.setVisible(true);
+			}
 		}
 	}
 
-	public static void main(String[] args) throws MalformedURLException, RemoteException, ClassNotFoundException, NotBoundException {
-		new frmChucNang();
+	public static void main(String[] args) throws RemoteException, NotBoundException {
+		new frmChucNang(maNhanVien).setVisible(true);
 	}
 }

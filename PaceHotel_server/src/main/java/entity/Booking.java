@@ -2,12 +2,14 @@ package entity;
 
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -24,6 +26,7 @@ public class Booking implements Serializable
 	private static final long serialVersionUID = -1831837452886072165L;
 
 	@Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(nullable = false)
 	private int bookingId;
 	
@@ -31,9 +34,9 @@ public class Booking implements Serializable
 	private int numAdults;
 	private int numChildren;
 	private String note;
-	private LocalDate bookingDateTime;
-	private LocalDate arrivalDateTime;
-	private LocalDate departureDateTime;
+	private LocalDateTime bookingDateTime;
+	private LocalDateTime arrivalDateTime;
+	private LocalDateTime departureDateTime;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "roomNo")
@@ -54,9 +57,24 @@ public class Booking implements Serializable
 		super();
 		// TODO Auto-generated constructor stub
 	}
+	
+	public Booking(int qtyRoom, int numAdults, int numChildren, String note, LocalDateTime bookingDateTime,
+			LocalDateTime arrivalDateTime, LocalDateTime departureDateTime, Room room, Employee employee, Guest guest) {
+		super();
+		this.qtyRoom = qtyRoom;
+		this.numAdults = numAdults;
+		this.numChildren = numChildren;
+		this.note = note;
+		this.bookingDateTime = bookingDateTime;
+		this.arrivalDateTime = arrivalDateTime;
+		this.departureDateTime = departureDateTime;
+		this.room = room;
+		this.employee = employee;
+		this.guest = guest;
+	}
 
-	public Booking(int bookingId, int qtyRoom, int numAdults, int numChildren, String note, LocalDate bookingDateTime,
-			LocalDate arrivalDateTime, LocalDate departureDateTime, Room room, Employee employee, Guest guest,
+	public Booking(int bookingId, int qtyRoom, int numAdults, int numChildren, String note, LocalDateTime bookingDateTime,
+			LocalDateTime arrivalDateTime, LocalDateTime departureDateTime, Room room, Employee employee, Guest guest,
 			List<BillDetail> billDetail) {
 		super();
 		this.bookingId = bookingId;
@@ -113,27 +131,27 @@ public class Booking implements Serializable
 		this.note = note;
 	}
 
-	public LocalDate getBookingDateTime() {
+	public LocalDateTime getBookingDateTime() {
 		return bookingDateTime;
 	}
 
-	public void setBookingDateTime(LocalDate bookingDateTime) {
+	public void setBookingDateTime(LocalDateTime bookingDateTime) {
 		this.bookingDateTime = bookingDateTime;
 	}
 
-	public LocalDate getArrivalDateTime() {
+	public LocalDateTime getArrivalDateTime() {
 		return arrivalDateTime;
 	}
 
-	public void setArrivalDateTime(LocalDate arrivalDateTime) {
+	public void setArrivalDateTime(LocalDateTime arrivalDateTime) {
 		this.arrivalDateTime = arrivalDateTime;
 	}
 
-	public LocalDate getDepartureDateTime() {
+	public LocalDateTime getDepartureDateTime() {
 		return departureDateTime;
 	}
 
-	public void setDepartureDateTime(LocalDate departureDateTime) {
+	public void setDepartureDateTime(LocalDateTime departureDateTime) {
 		this.departureDateTime = departureDateTime;
 	}
 

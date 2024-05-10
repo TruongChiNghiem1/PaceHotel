@@ -1,11 +1,12 @@
 package dao;
 
+import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.List;
 
 import entity.RoomType;
 
-public interface RoomTypeIDao {
+public interface RoomTypeIDao extends Remote {
 	public List<RoomType> getAllRoomType() throws RemoteException;
 	public RoomType getRoomType(String roomTypeId) throws RemoteException;
 	public int addRoomType(RoomType r) throws RemoteException;

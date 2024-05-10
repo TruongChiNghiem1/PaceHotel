@@ -6,6 +6,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.List;
 
 import dao.RoomIDao;
+import entity.Booking;
 import entity.Room;
 import entity.RoomType;
 import jakarta.persistence.EntityManager;
@@ -33,7 +34,16 @@ public class Room_DAO extends UnicastRemoteObject implements RoomIDao, Serializa
 	
 	public List<Object[]> getAllInfoRoom() {
 	    try {
-	    	return entityManager.createQuery("SELECT r.roomNo, rt.roomType, rt.people, rt.qtyBed, rt.fisrtHourFee, rt.nextHourFee, rt.overNightFee, r.status " +
+	    	return entityManager.createQuery("SELECT "
+	    			+ "r.roomNo,"
+	    			+ " rt.roomType"
+	    			+ ", rt.people,"
+	    			+ " rt.qtyBed,"
+	    			+ " rt.fisrtHourFee,"
+	    			+ " rt.nextHourFee,"
+	    			+ " rt.overNightFee,"
+	    			+ " r.status,"
+	    			+ " rt.disscount " +
 	                "FROM Room r JOIN r.roomType rt ORDER BY r.roomNo", Object[].class).getResultList();
 	    } catch (Exception e) {
 	        e.printStackTrace();
@@ -100,23 +110,75 @@ public class Room_DAO extends UnicastRemoteObject implements RoomIDao, Serializa
 		return -1;
 	}
 	
-	public int updateRoom(String roomNo, RoomType roomType, String roomStatus) throws RemoteException {
+	public int updateRoomStatus(String roomNo, String roomStatus) throws RemoteException {
+	    try {
+	        entityManager.getTransaction().begin();
+	        Room room = entityManager.find(Room.class, roomNo);
+	        if (room != null) {
+	            room.setStatus(roomStatus);
+	            entityManager.merge(room);
+	            entityManager.getTransaction().commit();
+	            return 1;
+	        } else {
+	            return 0;
+	        }
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        entityManager.getTransaction().rollback();
+	        return 0;
+	    }
+	}
+	
+	public Boolean findStatus(String id) throws RemoteException {
+		for(int i = 0; i < getAllInfoRoom().size(); i++) {
+			if(getAllInfoRoom().get(i)[0].equals(id) && getAllInfoRoom().get(i)[7].equals("Dirty")) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public Boolean findStatusOccupied(String id) throws RemoteException {
+		for(int i = 0; i < getAllInfoRoom().size(); i++) {
+			if(getAllInfoRoom().get(i)[0].equals(id) && getAllInfoRoom().get(i)[7].equals("Occupied")) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public Boolean findStatusOrdered(String id) throws RemoteException {
+		for(int i = 0; i < getAllInfoRoom().size(); i++) {
+			if(getAllInfoRoom().get(i)[0].equals(id) && getAllInfoRoom().get(i)[7].equals("Ordered")) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public Boolean findStatusReady(String id) throws RemoteException {
+		for(int i = 0; i < getAllInfoRoom().size(); i++) {
+			if(getAllInfoRoom().get(i)[0].equals(id) && getAllInfoRoom().get(i)[7].equals("Ready")) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	
+	public Room findRoomByRoomNo(String roomNo) throws RemoteException {
         try {
-            entityManager.getTransaction().begin();
-            Room room = entityManager.find(Room.class, roomNo);
+        	Room room = entityManager.createQuery("SELECT r FROM Room r JOIN FETCH r.roomType WHERE r.roomNo = :roomNo", Room.class)
+                    .setParameter("roomNo", roomNo)
+                    .getSingleResult();
             if (room != null) {
-                room.setRoomType(roomType);
-                room.setStatus(roomStatus);
-                entityManager.merge(room);
-                entityManager.getTransaction().commit();
-                return 1;
+                return room;
             } else {
-                return 0;
+                return null;
             }
         } catch (Exception e) {
             e.printStackTrace();
-            entityManager.getTransaction().rollback();
-            return 0;
+            return null;
         }
     }
 }

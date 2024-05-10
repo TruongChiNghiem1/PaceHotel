@@ -11,19 +11,13 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.Serializable;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
-import java.util.Date;
-import java.util.Locale;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -32,24 +26,24 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
+import dao.EmployeeIDao;
 import entity.Employee;
-import service.Employee_DAO;
 
 public class frmEmployeeManager extends JPanel implements ActionListener, Serializable {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 8928094115115382213L;
+	private static final long serialVersionUID = -8034085461914919966L;
 	private JLabel lblEmployeeID, lblFullName, lblGender, lblDOB, lblPhoneNo, lblSalary, lblPassword;
 	private JTextField txtEmployeeID, txtFullName, txtDOB, txtPhoneNo, txtSalary, txtEmail, txtFind;
 	private JComboBox<String> cbGender;
 	private JButton btnFind, btnUpdate, btnClear, btnAdd, btnDelete, btnSave;
 	private JTable tbEmployee;
 	private DefaultTableModel model;
-	private Employee_DAO employeeList;
+	private EmployeeIDao employeeList;
 	private int index = 1;
 
-	public frmEmployeeManager(Registry registry) throws RemoteException {
+	public frmEmployeeManager(Registry registry) throws RemoteException, NotBoundException {
 		setLayout(new BorderLayout());
 
 		JPanel pnNorth = new JPanel();
@@ -105,10 +99,9 @@ public class frmEmployeeManager extends JPanel implements ActionListener, Serial
 
 		JPanel pnC2 = new JPanel();
 		pnC2.setLayout(new BorderLayout());
-
 		String[] cols = { "STT", "EmployeeID", "FullName", "DOB", "Gender", "PhoneNo", "Email", "Salary" };
 		model = new DefaultTableModel(cols, 0);
-		employeeList = new Employee_DAO(null);
+		employeeList = (EmployeeIDao) registry.lookup("employeeIDao");
 		for (Employee e : employeeList.getAllEmployees()) {
 			String gender = "";
 			if (e.getGender() == 1) {
@@ -193,39 +186,46 @@ public class frmEmployeeManager extends JPanel implements ActionListener, Serial
 
 		tbEmployee.addMouseListener(new MouseListener() {
 
+			@Override
 			public void mouseReleased(MouseEvent e) {
 				// TODO Auto-generated method stub
 
 			}
+
+			@Override
 			public void mousePressed(MouseEvent e) {
 				// TODO Auto-generated method stub
 
 			}
 
+			@Override
 			public void mouseExited(MouseEvent e) {
 				// TODO Auto-generated method stub
 
 			}
 
+			@Override
 			public void mouseEntered(MouseEvent e) {
 				// TODO Auto-generated method stub
 
 			}
 
+			@Override
 			public void mouseClicked(MouseEvent e) {
 				renderRowOfTable();
 			}
 		});
+		
+		dinhDangMaNhanVien();
+		txtEmployeeID.setEditable(false);
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource().equals(btnFind)) {
 			try {
 				Find();
-			} catch (HeadlessException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			} catch (RemoteException e1) {
+			} catch (HeadlessException | RemoteException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
@@ -244,11 +244,17 @@ public class frmEmployeeManager extends JPanel implements ActionListener, Serial
 					Add();
 				} catch (ParseException e1) {
 					e1.printStackTrace();
+				} catch (HeadlessException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
 				}
 			}
 		} else if (e.getSource().equals(btnUpdate)) {
 			if (btnUpdate.getText().equals("Update")) {
-				btnUpdate.setText("Cancle");
+				btnUpdate.setText("Cancel");
 				btnUpdate.setBackground(new Color(126, 126, 126));
 				btnSave.setVisible(true);
 			} else {
@@ -263,6 +269,9 @@ public class frmEmployeeManager extends JPanel implements ActionListener, Serial
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			} catch (ParseException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (RemoteException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
@@ -313,7 +322,7 @@ public class frmEmployeeManager extends JPanel implements ActionListener, Serial
 		return true;
 	}
 
-	public void Add() throws ParseException {
+	public void Add() throws ParseException, HeadlessException, RemoteException {
 		String EmID = txtEmployeeID.getText();
 		String Name = txtFullName.getText();
 		String DOB = txtDOB.getText();
@@ -325,20 +334,21 @@ public class frmEmployeeManager extends JPanel implements ActionListener, Serial
 		if (gender.equalsIgnoreCase("Nữ")) {
 			gd = 1;
 		}
-		Employee s = new Employee(EmID, Name, DOB, gd, phone, email, "123", Double.parseDouble(salary), "ER001");
-		if (employeeList.addEmployee(s) != 0) {
+		Employee s = new Employee(EmID, Name, DOB, gd, phone, email, "123", Double.parseDouble(salary));
+		if (employeeList.addEmployee(s) != -1) {
 			Object[] row = { index, s.getEmployeeId(), s.getFullName(), s.getDOB(), gender, s.getPhoneNo(),
 					s.getEmail(), s.getSalary() };
 			JOptionPane.showMessageDialog(null, "Employee has been successfully added !");
 			model.addRow(row);
 			index++;
+			dinhDangMaNhanVien();
 		} else {
 			JOptionPane.showMessageDialog(null, "Error! ID already exists.");
 		}
+		dinhDangMaNhanVien();
 	}
 
 	public void Clear() {
-		txtEmployeeID.setText("");
 		txtFullName.setText("");
 		txtEmail.setText("");
 		txtDOB.setText("");
@@ -350,7 +360,7 @@ public class frmEmployeeManager extends JPanel implements ActionListener, Serial
 	public void Delete() throws RemoteException {
 		int r = tbEmployee.getSelectedRow();
 		if (r != -1) {
-			int notice = JOptionPane.showConfirmDialog(null, "Bạn chắc chắn muốn xóa môn học này chứ?", "Delete",
+			int notice = JOptionPane.showConfirmDialog(null, "Bạn chắc chắn muốn xóa nhân viên này chứ?", "Delete",
 					JOptionPane.YES_NO_OPTION);
 			if (notice == JOptionPane.YES_OPTION) {
 				employeeList.deleteEmployee(model.getValueAt(r, 1).toString());
@@ -372,7 +382,7 @@ public class frmEmployeeManager extends JPanel implements ActionListener, Serial
 		}
 	}
 
-	public void Update() throws HeadlessException, ParseException {
+	public void Update() throws HeadlessException, ParseException, RemoteException {
 		String IDUpdate = txtEmployeeID.getText();
 		String newName = txtFullName.getText();
 		String DOB = txtDOB.getText();
@@ -383,7 +393,7 @@ public class frmEmployeeManager extends JPanel implements ActionListener, Serial
 		}
 		String PhoneNo = txtPhoneNo.getText();
 		String Email = txtEmail.getText();
-		String Salary = txtSalary.getText();
+		double Salary = Double.parseDouble(txtSalary.getText());
 
 		int notice = JOptionPane.showConfirmDialog(null, "Are you sure you want to update this row?", "Delete",
 				JOptionPane.YES_NO_OPTION);
@@ -400,7 +410,7 @@ public class frmEmployeeManager extends JPanel implements ActionListener, Serial
 
 	public void renderRowOfTable() {
 		int r = tbEmployee.getSelectedRow();
-		txtEmployeeID.setText(model.getValueAt(r, 1).toString());
+//		txtEmployeeID.setText(model.getValueAt(r, 1).toString());
 		txtFullName.setText(model.getValueAt(r, 2).toString());
 		txtDOB.setText(model.getValueAt(r, 3).toString());
 		if (model.getValueAt(r, 4).toString().equalsIgnoreCase("Nam")) {
@@ -412,5 +422,22 @@ public class frmEmployeeManager extends JPanel implements ActionListener, Serial
 		txtEmail.setText(model.getValueAt(r, 6).toString());
 		txtSalary.setText(model.getValueAt(r, 7).toString());
 	}
-
+	
+	private void dinhDangMaNhanVien() throws RemoteException
+	{
+		String maNhanVien = "";
+		maNhanVien += "E";
+		if (String.valueOf(employeeList.layMaNVLonNhat()).length() == 2)
+		{
+			maNhanVien += "0";
+		}
+		
+		else if (String.valueOf(employeeList.layMaNVLonNhat()).length() == 1)
+		{
+			maNhanVien += "00";
+		}
+		maNhanVien += String.valueOf(employeeList.layMaNVLonNhat() + 1);
+		txtEmployeeID.setText(maNhanVien);
+	}
+	
 }

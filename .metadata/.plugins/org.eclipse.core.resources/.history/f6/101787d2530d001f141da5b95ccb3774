@@ -1,0 +1,213 @@
+package service;
+
+import java.io.Serializable;
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.List;
+
+import connectDB.ConnectDB;
+import dao.EmployeeIDao;
+import entity.Employee;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+
+public class Employee_DAO extends UnicastRemoteObject implements EmployeeIDao, Serializable
+{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -2774272830753420475L;
+	private EntityManager entityManager;
+	public Employee_DAO(EntityManager entityManager) throws RemoteException {
+		// TODO Auto-generated constructor stub
+		this.entityManager = entityManager;
+	}
+	
+
+	public List<Employee> getAllEmployees() {
+	    return entityManager.createQuery("SELECT e FROM Employee e", Employee.class)
+	            .getResultList();
+	}
+	
+//	public Employee revertRowToEmployee(ResultSet rs) {
+//		Employee e = null;
+//		try {
+//			e = new Employee(rs.getString(1),
+//					rs.getString(2),
+//					rs.getString(3),
+//					rs.getInt(4),
+//					rs.getString(5),
+//					rs.getString(6),
+//					rs.getString(7),
+//					rs.getDouble(8),
+//					rs.getString(9));
+//		} catch (SQLException e1) {
+//			// TODO Auto-generated catch block
+//			e1.printStackTrace();
+//		}
+//		return e;
+//	}
+               
+
+
+	public Employee login(String employeeID, String password) {
+	    try {
+	        return (Employee) entityManager.createNativeQuery("SELECT e.employeeId, e.fullName, e.dOB, e.gender, e.phoneNo, e.email, e.password, e.salary, e.roleId "
+	        		+ "FROM employee e "
+	        		+ "WHERE e.employeeId = :employeeId "
+	        		+ "AND e.password = :password",
+	            Employee.class)
+	            .setParameter("employeeId", employeeID)
+	            .setParameter("password", password)
+	            .getSingleResult();
+	    } catch (NoResultException e) {
+	        return null;
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        return null;
+	    }
+	}
+	
+	public int addEmployee(Employee e) throws RemoteException, ParseException {
+        try {
+            entityManager.getTransaction().begin();
+            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            java.util.Date date = dateFormat.parse(e.getDOB());
+            java.sql.Date sqlDate = new java.sql.Date(date.getTime());
+            e.setDOB(sqlDate.toString());
+            entityManager.persist(e);
+            entityManager.getTransaction().commit();
+            return 1;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            entityManager.getTransaction().rollback();
+            return 0;
+        }
+    }
+	
+
+	public boolean deleteEmployee(String employeeId) throws RemoteException {
+        try {
+            entityManager.getTransaction().begin();
+            Employee employee = entityManager.find(Employee.class, employeeId);
+            if (employee != null) {
+                entityManager.remove(employee);
+                entityManager.getTransaction().commit();
+                return true;
+            } else {
+                return false;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            entityManager.getTransaction().rollback();
+            return false;
+        }
+    }
+	
+	public int findEmployee(String employeeId) throws RemoteException {
+        try {
+            List<Employee> employees = getAllEmployees();
+            for (int i = 0; i < employees.size(); i++) {
+                if (employees.get(i).getEmployeeId().equalsIgnoreCase(employeeId)) {
+                    return i;
+                }
+            }
+            return -1;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return -1;
+        }
+    }
+	
+	public int updateEmployee(String id, String name, String DOB, int gender, String phone, String email, double salary) throws RemoteException, ParseException {
+        try {
+            entityManager.getTransaction().begin();
+            Employee employee = entityManager.find(Employee.class, id);
+            if (employee != null) {
+                employee.setFullName(name);
+                employee.setDOB(DOB);
+                employee.setGender(gender);
+                employee.setPhoneNo(phone);
+                employee.setEmail(email);
+                employee.setSalary(salary);
+                entityManager.merge(employee);
+                entityManager.getTransaction().commit();
+                return findEmployee(id);
+            } else {
+                return -1;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            entityManager.getTransaction().rollback();
+            return -1;
+        }
+    }
+	
+	public Employee layNhanVienTheoMa(String mnv)
+	{
+		try
+		{
+			ConnectDB.getInstance();
+			Connection con = ConnectDB.getConnection();
+			String sql = "select * from Employee where EmployeeID = ?";
+			PreparedStatement preparedStatement = con.prepareStatement(sql);
+			preparedStatement.setString(1, mnv);
+			ResultSet rs = preparedStatement.executeQuery();
+			while(rs.next())
+			{
+				String EmployeeID = rs.getString(1);
+				String FullName = rs.getString(2);
+				String DOB = rs.getString(3);
+				int Gender = rs.getInt(4);
+				String PhoneNo = rs.getString(5);
+				String Email = rs.getString(6);
+				String Password = rs.getString(7);
+				Double Salary = rs.getDouble(8);
+				String RoleID = rs.getString(9);
+				
+				Employee emp = new Employee(EmployeeID, FullName, DOB, Gender, PhoneNo, Email, Password, Gender, RoleID);
+				
+				return emp;
+			}
+		}
+		catch (Exception e)
+		{
+			
+		}
+		return null;
+	}
+	
+//	lấy mã nhân viên lớn nhất để set mã tự động
+	public int layMaNVLonNhat()
+	{
+		int maNhanVienLonNhat = 0;
+		try
+		{
+			ConnectDB.getInstance();
+			Connection con = ConnectDB.getConnection();
+			String sql = "select * from Employee";
+			Statement statement = con.createStatement();
+			ResultSet rs = statement.executeQuery(sql);
+			while(rs.next())
+			{
+				String maNhanVien = rs.getString(1).substring(1).trim();
+				if (maNhanVienLonNhat < Integer.parseInt(maNhanVien))
+				{
+					maNhanVienLonNhat = Integer.parseInt(maNhanVien);
+				}
+			}
+		}
+		catch (Exception e)
+		{
+			
+		}
+		return maNhanVienLonNhat;
+	}
+}

@@ -1,0 +1,84 @@
+package service;
+
+import java.io.Serializable;
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.ParseException;
+
+import java.util.List;
+
+import connectDB.ConnectDB;
+import dao.GuestIDao;
+import entity.Guest;
+import jakarta.persistence.EntityManager;
+
+public class Guest_DAO extends UnicastRemoteObject implements GuestIDao, Serializable{
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 3905403026562596723L;
+	private EntityManager entityManager;
+	public Guest_DAO(EntityManager entityManager) throws RemoteException {
+		// TODO Auto-generated constructor stub
+		this.entityManager = entityManager;
+	}
+
+	public List<Guest> getAllGuest() throws RemoteException {
+        try {
+            return entityManager.createQuery("SELECT g FROM Guest g", Guest.class).getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+	
+	public static Guest getOneGuest(String indentityCard) {
+//		Object[] guest = null;
+		ConnectDB.getInstance();
+		Connection con = ConnectDB.getConnection();
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+		String sql = "select * from Guest where GuestID = ?";
+		try {
+			pst = con.prepareStatement(sql);
+			
+			pst.setString(1, indentityCard);
+			rs = pst.executeQuery();
+			if(rs.next()) {
+				Guest guest = new Guest(rs.getString(1), rs.getString(2), rs.getString(3), rs.getInt(4), rs.getString(5), rs.getString(6), rs.getString(7),rs.getString(8) ,rs.getFloat(9));
+				return guest;
+			}
+		} catch (SQLException e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	public int addGuest(Guest g) throws RemoteException, ParseException {
+        try {
+            entityManager.getTransaction().begin();
+            entityManager.persist(g);
+            entityManager.getTransaction().commit();
+            return 1;
+        } catch (Exception e) {
+            e.printStackTrace();
+            entityManager.getTransaction().rollback();
+            return 0;
+        }
+    }
+	
+	public int findGuest(String GuestID) throws RemoteException {
+		for (int i = 0; i < getAllGuest().size(); i++) {
+			if(getAllGuest().get(i).getGuestID().equalsIgnoreCase(GuestID)) {
+				return i;
+			}
+		}
+		return -1;
+	}
+}

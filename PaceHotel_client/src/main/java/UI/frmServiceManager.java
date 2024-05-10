@@ -11,7 +11,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.Serializable;
-import java.rmi.AccessException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
@@ -28,12 +27,13 @@ import javax.swing.table.DefaultTableModel;
 
 import dao.ServiceIDao;
 import entity.Service;
+import service.Service_DAO;
 
 public class frmServiceManager extends JFrame implements ActionListener, Serializable {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -1054668439002440806L;
+	private static final long serialVersionUID = -7732602064944188757L;
 	private JLabel pServiceID, pServiceName, pPrice, pTitle;
 	private JTextField inputServiceID, inputServiceName, inputPrice, inputFind;
 	private JButton btnAdd, btnClear, btnUpdate, btnDelete, btnFind, btnSave;
@@ -43,7 +43,7 @@ public class frmServiceManager extends JFrame implements ActionListener, Seriali
 	private ServiceIDao serviceList;
 	private int index = 1;
 
-	public frmServiceManager(Registry registry) throws AccessException, RemoteException, NotBoundException {
+	public frmServiceManager(Registry registry) throws RemoteException, NotBoundException {
 		setTitle("Service manager");
 //		setDefaultCloseOperation(frmRoomManage.EXIT_ON_CLOSE);
 		setLocationRelativeTo(null);
@@ -80,7 +80,7 @@ public class frmServiceManager extends JFrame implements ActionListener, Seriali
 		pnC1.add(pPrice = new JLabel("Price:"));
 		pnC1.add(inputPrice = new JTextField());
 
-		pServiceID.setBounds(580, 30, 60, 20);
+		pServiceID.setBounds(580, 30, 120, 20);
 		inputServiceID.setBounds(pServiceID.getX() + 80, pServiceID.getY(), 150, 20);
 
 		pServiceName.setBounds(pServiceID.getX() + 250, pServiceID.getY(), 130, 20);
@@ -94,7 +94,6 @@ public class frmServiceManager extends JFrame implements ActionListener, Seriali
 		String[] cols = { "STT", "Service ID", "Service Name", "Price" };
 		model = new DefaultTableModel(cols, 0);
 		serviceList = (ServiceIDao) registry.lookup("serviceIDao");
-
 		for (Service s : serviceList.getAllService()) {
 			Object[] service = { index, s.getServiceID(), s.getServiceName(), s.getPrice() };
 			model.addRow(service);
@@ -166,31 +165,31 @@ public class frmServiceManager extends JFrame implements ActionListener, Seriali
 
 		tbService.addMouseListener(new MouseListener() {
 
-
+			@Override
 			public void mouseReleased(MouseEvent e) {
 				// TODO Auto-generated method stub
 
 			}
 
-
+			@Override
 			public void mousePressed(MouseEvent e) {
 				// TODO Auto-generated method stub
 
 			}
 
-
+			@Override
 			public void mouseExited(MouseEvent e) {
 				// TODO Auto-generated method stub
 
 			}
 
-
+			@Override
 			public void mouseEntered(MouseEvent e) {
 				// TODO Auto-generated method stub
 
 			}
 
-
+			@Override
 			public void mouseClicked(MouseEvent e) {
 				renderRowOfTable();
 
@@ -198,16 +197,13 @@ public class frmServiceManager extends JFrame implements ActionListener, Seriali
 		});
 	}
 
-
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource().equals(btnAdd)) {
 			if(validData()) {
 				try {
 					Add();
-				} catch (HeadlessException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				} catch (RemoteException e1) {
+				} catch (HeadlessException | RemoteException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
@@ -215,10 +211,7 @@ public class frmServiceManager extends JFrame implements ActionListener, Seriali
 		} else if (e.getSource().equals(btnFind)) {
 			try {
 				Find();
-			} catch (HeadlessException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			} catch (RemoteException e1) {
+			} catch (HeadlessException | RemoteException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
@@ -246,10 +239,7 @@ public class frmServiceManager extends JFrame implements ActionListener, Seriali
 			if(validData()) {
 				try {
 					Update();
-				} catch (HeadlessException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				} catch (RemoteException e1) {
+				} catch (HeadlessException | RemoteException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
@@ -285,7 +275,7 @@ public class frmServiceManager extends JFrame implements ActionListener, Seriali
 			return false;
 		}
 		if (!(Price.length() > 0 && Price.matches("[0-9']+"))) {
-			showMessage("lương phải là số", inputPrice);
+			showMessage("Tiền là số", inputPrice);
 			return false;
 		}
 

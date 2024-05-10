@@ -10,8 +10,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.io.Serializable;
-import java.rmi.AccessException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
@@ -29,8 +27,10 @@ import javax.swing.table.DefaultTableModel;
 import dao.RoomIDao;
 import dao.RoomTypeIDao;
 import entity.RoomType;
+import service.RoomType_DAO;
+import service.Room_DAO;
 
-public class frmRoomType extends JFrame implements ActionListener, Serializable {
+public class frmRoomType extends JFrame implements ActionListener {
 	/**
 	 * 
 	 */
@@ -45,7 +45,7 @@ public class frmRoomType extends JFrame implements ActionListener, Serializable 
 	private RoomIDao roomList;
 	private RoomTypeIDao roomTypeList;
 
-	public frmRoomType(Registry registry) throws AccessException, RemoteException, NotBoundException {
+	public frmRoomType(Registry registry) throws RemoteException, NotBoundException {
 		setTitle("Room type");
 		setLocationRelativeTo(null);
 		setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -91,7 +91,6 @@ public class frmRoomType extends JFrame implements ActionListener, Serializable 
 		pnC1.add(pSurchage = new JLabel("Surchage:"));
 		pnC1.add(inputSurchage = new JTextField());
 		roomTypeList = (RoomTypeIDao) registry.lookup("roomTypeIDao");
-
 //		for (RoomType rt : roomTypeList.getAllRoomType()) {
 //			cbRoomType.addItem(rt.getRoomType());
 //		}
@@ -198,26 +197,31 @@ public class frmRoomType extends JFrame implements ActionListener, Serializable 
 		
 		tbService.addMouseListener(new MouseListener() {
 			
+			@Override
 			public void mouseReleased(MouseEvent e) {
 				// TODO Auto-generated method stub
 				
 			}
 			
+			@Override
 			public void mousePressed(MouseEvent e) {
 				// TODO Auto-generated method stub
 				
 			}
 			
+			@Override
 			public void mouseExited(MouseEvent e) {
 				// TODO Auto-generated method stub
 				
 			}
 			
+			@Override
 			public void mouseEntered(MouseEvent e) {
 				// TODO Auto-generated method stub
 				
 			}
 			
+			@Override
 			public void mouseClicked(MouseEvent e) {
 				renderRowOfTable();
 				
@@ -238,24 +242,19 @@ public class frmRoomType extends JFrame implements ActionListener, Serializable 
 		
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource().equals(btnAdd)) {
 				try {
 					Add();
-				} catch (HeadlessException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				} catch (RemoteException e1) {
+				} catch (HeadlessException | RemoteException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 		} else if (e.getSource().equals(btnFind)) {
 			try {
 				Find();
-			} catch (HeadlessException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			} catch (RemoteException e1) {
+			} catch (HeadlessException | RemoteException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
@@ -264,7 +263,7 @@ public class frmRoomType extends JFrame implements ActionListener, Serializable 
 		} else if (e.getSource().equals(btnDelete)) {
 			try {
 				Delete();
-			} catch (RemoteException e1) {
+			} catch (HeadlessException | RemoteException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
@@ -281,10 +280,7 @@ public class frmRoomType extends JFrame implements ActionListener, Serializable 
 		} else if (e.getSource().equals(btnSave)) {
 				try {
 					Update();
-				} catch (HeadlessException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				} catch (RemoteException e1) {
+				} catch (HeadlessException | RemoteException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
@@ -329,14 +325,17 @@ public class frmRoomType extends JFrame implements ActionListener, Serializable 
 		}
 	}
 
-	public void Delete() throws RemoteException {
+	public void Delete() throws HeadlessException, RemoteException {
 		int r = tbService.getSelectedRow();
 		int notice = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete this row?", "Delete",
 				JOptionPane.YES_NO_OPTION);
 		if (notice == JOptionPane.YES_OPTION) {
-			roomTypeList.deleteRoomType(model.getValueAt(r, 1).toString());
-			model.removeRow(r);
-			Clear();
+			if(roomTypeList.deleteRoomType(model.getValueAt(r, 1).toString())) {
+				model.removeRow(r);
+				Clear();
+			} else {
+				JOptionPane.showMessageDialog(null, "Vui lòng xóa những phòng có roomtype này trước");
+			}
 		}else {
 			JOptionPane.showMessageDialog(null,"Select the row to delete!");
 		}

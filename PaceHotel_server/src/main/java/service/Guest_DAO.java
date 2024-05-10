@@ -32,6 +32,21 @@ public class Guest_DAO extends UnicastRemoteObject implements GuestIDao, Seriali
         }
     }
 
+	
+	public Guest getOneGuest(String guestID) throws RemoteException {
+        try {
+            Guest guest = entityManager.find(Guest.class, guestID);
+            if (guest != null) {
+                return guest;
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 	public int addGuest(Guest g) throws RemoteException, ParseException {
         try {
             entityManager.getTransaction().begin();

@@ -10,8 +10,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.io.Serializable;
-import java.rmi.AccessException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
@@ -32,7 +30,7 @@ import dao.RoomTypeIDao;
 import entity.Room;
 import entity.RoomType;
 
-public class frmRoomManage extends JFrame implements ActionListener, Serializable {
+public class frmRoomManage extends JFrame implements ActionListener {
 	/**
 	 * 
 	 */
@@ -48,8 +46,10 @@ public class frmRoomManage extends JFrame implements ActionListener, Serializabl
 	private RoomIDao roomList;
 	private RoomTypeIDao roomTypeList;
 	private Object[] lastRoom;
+	private Registry registryGlo;
 
-	public frmRoomManage(Registry registry) throws AccessException, RemoteException, NotBoundException {
+	public frmRoomManage(Registry registry) throws RemoteException, NotBoundException {
+		registryGlo = registry;
 		setTitle("Room manager");
 		setLocationRelativeTo(null);
 		setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -181,26 +181,31 @@ public class frmRoomManage extends JFrame implements ActionListener, Serializabl
 		
 		tbService.addMouseListener(new MouseListener() {
 			
+			@Override
 			public void mouseReleased(MouseEvent e) {
 				// TODO Auto-generated method stub
 				
 			}
 			
+			@Override
 			public void mousePressed(MouseEvent e) {
 				// TODO Auto-generated method stub
 				
 			}
 			
+			@Override
 			public void mouseExited(MouseEvent e) {
 				// TODO Auto-generated method stub
 				
 			}
 			
+			@Override
 			public void mouseEntered(MouseEvent e) {
 				// TODO Auto-generated method stub
 				
 			}
 			
+			@Override
 			public void mouseClicked(MouseEvent e) {
 				try {
 					renderRowOfTable();
@@ -226,20 +231,36 @@ public class frmRoomManage extends JFrame implements ActionListener, Serializabl
 		}
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource().equals(btnAdd)) {
 			if(validData()) {
-				Add();
+				try {
+					Add();
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 			}
 		} else if (e.getSource().equals(btnFind)) {
-			Find();
+			try {
+				Find();
+			} catch (HeadlessException | RemoteException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 		} else if (e.getSource().equals(btnClear)) {
 			Clear();
 		} else if (e.getSource().equals(btnDelete)) {
-			Delete();
+			try {
+				Delete();
+			} catch (HeadlessException | RemoteException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 		} else if (e.getSource().equals(btnUpdate)) {
 			if (btnUpdate.getText().equals("Update")) {
-				btnUpdate.setText("Cancle");
+				btnUpdate.setText("Cancel");
 				btnUpdate.setBackground(new Color(126, 126, 126));
 				btnSave.setVisible(true);
 			} else {
@@ -249,7 +270,12 @@ public class frmRoomManage extends JFrame implements ActionListener, Serializabl
 			}
 		} else if (e.getSource().equals(btnSave)) {
 			if(validData()) {
-				Update();
+				try {
+					Update();
+				} catch (HeadlessException | RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 			}
 		}
 
@@ -271,11 +297,13 @@ public class frmRoomManage extends JFrame implements ActionListener, Serializabl
 		return true;
 	}
 
-	public void Add() {
+	public void Add() throws RemoteException {
 		String roomID = inputRoomID.getText();
-		String roomType = cbRoomType.getSelectedItem().toString();
+		String roomTypeId = cbRoomType.getSelectedItem().toString();
+		RoomType roomType = roomTypeList.getRoomType(roomTypeId);
+
 		String roomStatus = cbRoomStatus.getSelectedItem().toString();
-		Room newRoom = new Room(roomID, roomType, roomStatus);
+		Room newRoom = new Room(roomID, roomStatus, roomType);
 		if (roomList.addRoom(newRoom) != 0) {
 			Object[] o = roomList.getLastRoom(roomID);
 			Object[] row = { index, o[0], o[1], o[2], o[3], o[4], o[5], o[6], o[7] };
@@ -286,27 +314,30 @@ public class frmRoomManage extends JFrame implements ActionListener, Serializabl
 		}
 	}
 
-	public void Delete() throws RemoteException {
+	public void Delete() throws HeadlessException, RemoteException {
 		int r = tbService.getSelectedRow();
 		int notice = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete this row?", "Delete",
 				JOptionPane.YES_NO_OPTION);
 		if (notice == JOptionPane.YES_OPTION) {
-			roomList.deleteRoom(model.getValueAt(r, 1).toString());
-			model.removeRow(r);
-			Clear();
+			if(roomList.deleteRoom(model.getValueAt(r, 1).toString())) {
+				model.removeRow(r);
+				Clear();
+			} else {
+				JOptionPane.showMessageDialog(null, "Vui lòng checkout booking của phòng này trước này trước");
+			}
 		}else {
 			JOptionPane.showMessageDialog(null,"Select the row to delete!");
 		}
 	}
 
-	public void Update() {
+	public void Update() throws HeadlessException, RemoteException {
 		String roomNo = inputRoomID.getText();
 		String roomType = cbRoomType.getSelectedItem().toString();
 		String roomStatus = cbRoomStatus.getSelectedItem().toString();
 		int notice = JOptionPane.showConfirmDialog(null, "Are you sure you want to update this row?", "Delete",
 				JOptionPane.YES_NO_OPTION);
 		if (notice == JOptionPane.YES_OPTION) {
-			if (roomList.updateRoom(roomNo, roomType, roomStatus) != -1) {
+			if (roomList.updateRoomStatus(roomNo, roomStatus) != -1) {
 				JOptionPane.showMessageDialog(null, "Update Success!");
 				renderRowOfTable();
 			} else {

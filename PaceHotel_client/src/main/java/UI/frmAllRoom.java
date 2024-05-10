@@ -2,9 +2,11 @@ package UI;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.LayoutManager;
 import java.awt.Toolkit;
@@ -14,7 +16,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.Serializable;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -34,24 +35,22 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.border.LineBorder;
 
+import dao.BillDetailIDao;
 import dao.RoomIDao;
+import service.Room_DAO;
 
-public class frmAllRoom extends JPanel implements ActionListener, MouseListener, Serializable {
+public class frmAllRoom extends JPanel implements MouseListener, Serializable {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -5138091449693934783L;
+	private static final long serialVersionUID = 2825127543653033144L;
 	private JPanel pnlCalendar, pnlAllRoom, pnlNode, pnlRed, pnlGreen, pnlOrange, pnlViolet, pnlRoom1;
 	private JTextField txtCalendar, txtRoomNumber1, txt1Room1, txt2Room1, txt3Room1, txt4Room1;
 	private JLabel lblCalendar, lblRed, lblGreen, lblOrange, lblViolet;
-//	private Room_DAO roomList;
-
-	
-	
+	private RoomIDao roomList;
 	private JPanel[] panels;
 
-	public frmAllRoom(final Registry registry) throws MalformedURLException, RemoteException, NotBoundException, ClassNotFoundException  {
-		RoomIDao roomList = (RoomIDao) registry.lookup("roomIDao");
+	public frmAllRoom(final String maNhanVien, final Registry registry) throws RemoteException, NotBoundException {		
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
 		pnlCalendar = new JPanel();
@@ -79,6 +78,8 @@ public class frmAllRoom extends JPanel implements ActionListener, MouseListener,
 
 		pnlAllRoom = new JPanel();
 		pnlAllRoom.setLayout(new BoxLayout(pnlAllRoom, BoxLayout.Y_AXIS));
+
+		roomList = (RoomIDao) registry.lookup("roomIDao");
 
 		JPanel panel = new JPanel();
 		panel.setPreferredSize(new Dimension(1090, 150));
@@ -122,7 +123,7 @@ public class frmAllRoom extends JPanel implements ActionListener, MouseListener,
 				txt1Room1.setFont(new Font("Arial", Font.BOLD, 20));
 				txt1Room1.setForeground(Color.WHITE);
 
-				txt1Room1.setText(roomList.getAllRoom().get(index).getRoomNo());
+				txt1Room1.setText(roomList.getAllRoom().get(index).getRoomType().getRoomType());
 
 				txt2Room1 = new JTextField();
 				txt2Room1.setEditable(false);
@@ -202,8 +203,11 @@ public class frmAllRoom extends JPanel implements ActionListener, MouseListener,
 		                    JPanel clickedPanel = (JPanel)e.getSource();
 		                    String panelName = clickedPanel.getName();
 		                    try {
-								infoBookingFrame = new frmInforBooking(panelName, registry);
-							} catch (RemoteException | NotBoundException e1) {
+								infoBookingFrame = new frmInforBooking(panelName, maNhanVien, registry);
+							} catch (RemoteException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							} catch (NotBoundException e1) {
 								// TODO Auto-generated catch block
 								e1.printStackTrace();
 							}
@@ -270,32 +274,32 @@ public class frmAllRoom extends JPanel implements ActionListener, MouseListener,
 		
 	}
 
+	@Override
 	public void mouseClicked(MouseEvent e) {
 		// TODO Auto-generated method stub
 		
 	}
 
+	@Override
 	public void mousePressed(MouseEvent e) {
 		// TODO Auto-generated method stub
 		
 	}
 
+	@Override
 	public void mouseReleased(MouseEvent e) {
 		// TODO Auto-generated method stub
 		
 	}
 
+	@Override
 	public void mouseEntered(MouseEvent e) {
 		// TODO Auto-generated method stub
 		
 	}
 
+	@Override
 	public void mouseExited(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
 		
 	}

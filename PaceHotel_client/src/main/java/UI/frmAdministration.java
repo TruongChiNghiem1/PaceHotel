@@ -2,12 +2,10 @@ package UI;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.Serializable;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
@@ -17,17 +15,17 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-public class frmAdministration extends JPanel implements ActionListener, Serializable
+public class frmAdministration extends JPanel implements ActionListener
 {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -1645005994411792115L;
+	private static final long serialVersionUID = -7079201434430394483L;
 	private JButton btnRoomMNG, btnEmployeeManager, btnServiceManager, btnLoginHistory, btnRoomType;
-	private Registry registryGlobal;
+	private Registry registryGlo;
 	public frmAdministration(Registry registry)
 	{
-		registryGlobal = registry;
+		registryGlo = registry;
 		setLayout(new BorderLayout());
 		
 		JPanel pnNorth = new JPanel();
@@ -77,7 +75,7 @@ public class frmAdministration extends JPanel implements ActionListener, Seriali
 		btnRoomType.addActionListener(this);
 	}
 	
-
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
 		Object o = e.getSource();
@@ -90,8 +88,11 @@ public class frmAdministration extends JPanel implements ActionListener, Seriali
 			
 			JPanel pn = new JPanel();
 			try {
-				pn = new frmEmployeeManager(registryGlobal);
+				pn = new frmEmployeeManager(registryGlo);
 			} catch (RemoteException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (NotBoundException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
@@ -105,8 +106,11 @@ public class frmAdministration extends JPanel implements ActionListener, Seriali
 		{
 			JFrame fr = new JFrame();
 			try {
-				fr = new frmRoomManage(registryGlobal);
-			} catch (RemoteException | NotBoundException e1) {
+				fr = new frmRoomManage(registryGlo);
+			} catch (RemoteException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (NotBoundException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
@@ -115,8 +119,11 @@ public class frmAdministration extends JPanel implements ActionListener, Seriali
 		}else if (o.equals(btnServiceManager)) {
 			JFrame fr = new JFrame();
 			try {
-				fr = new frmServiceManager(registryGlobal);
-			} catch (RemoteException | NotBoundException e1) {
+				fr = new frmServiceManager(registryGlo);
+			} catch (RemoteException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (NotBoundException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
@@ -125,8 +132,11 @@ public class frmAdministration extends JPanel implements ActionListener, Seriali
 		} else if(o.equals(btnRoomType)) {
 			JFrame fr = new JFrame();
 			try {
-				fr = new frmRoomType(registryGlobal);
-			} catch (RemoteException | NotBoundException e1) {
+				fr = new frmRoomType(registryGlo);
+			} catch (RemoteException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (NotBoundException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
